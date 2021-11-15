@@ -22,11 +22,12 @@ jobs:
       - run: yarn generate-workflows
       - run: cp *.nix out/
       - run: cp flake.lock out/
-      - run: cp flake.lock out/
+      - run: cp README-builder.md out/README.md
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.DIST_DEPLOY_KEY }}
           external_repository: DeployDAO/verified-programs-builder
+          exclude_assets: ""
           publish_branch: master
           publish_dir: ./out/

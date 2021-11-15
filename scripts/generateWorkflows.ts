@@ -4,10 +4,12 @@ import { parse } from "yaml";
 const makeWorkflowYaml = ({
   repo,
   tag,
+  slug,
   solanaVersion = "1.7.11",
 }: {
   repo: string;
   tag: string;
+  slug: string;
   solanaVersion?: string;
 }) => `
 name: Verify ${repo} ${tag}
@@ -15,7 +17,7 @@ name: Verify ${repo} ${tag}
 on:
   push:
     paths:
-      - ".github/workflows/${repo}_${tag}.yml"
+      - ".github/workflows/verify-${slug}.yml"
 
 env:
   CARGO_TERM_COLOR: always
@@ -76,7 +78,7 @@ jobs:
         with:
           deploy_key: \${{ secrets.DIST_DEPLOY_KEY }}
           external_repository: DeployDAO/verified-program-artifacts
-          publish_branch: ${repo}_${tag}
+          publish_branch: verify-${slug}
           publish_dir: ./artifacts/
 `;
 
@@ -96,9 +98,10 @@ const generateWorkflows = async () => {
   const workflowsDir = `${outDir}/.github/workflows/`;
   await fs.mkdir(workflowsDir, { recursive: true });
   for (const [repo, tag] of allTags) {
+    const slug = `${repo.replace("/", "__")}-${tag}`;
     await fs.writeFile(
-      `${workflowsDir}/verify-${repo.replace("/", "__")}-${tag}.yml`,
-      makeWorkflowYaml({ repo, tag })
+      `${workflowsDir}/verify-${slug}.yml`,
+      makeWorkflowYaml({ repo, tag, slug })
     );
   }
 };
