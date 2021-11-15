@@ -1,0 +1,41 @@
+{
+  "name": "@deploydao/verified-programs",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:deploydao/verified-programs.git",
+  "author": "Ian Macalinao <ian@ship.capital>",
+  "license": "AGPL-3.0",
+  "packageManager": "yarn@3.1.0",
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.1.0",
+    "@saberhq/eslint-config": "^1.7.1",
+    "@types/eslint": "^7.28.2",
+    "@types/lodash": "^4.14.176",
+    "@types/node": "^16.11.7",
+    "@types/prettier": "^2.4.2",
+    "@types/yaml": "^1",
+    "eslint": "^8.2.0",
+    "eslint-import-resolver-node": "^0.3.6",
+    "eslint-plugin-import": "^2.25.3",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.0.2",
+    "prettier": "^2.4.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "tiny-invariant": "^1.2.0",
+    "yaml": "^1.10.2"
+  },
+  "scripts": {
+    "lint": "eslint . --cache",
+    "generate-workflows": "ts-node scripts/generateWorkflows.ts",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix",
+    "*.{md,json,js,yml,yaml,html}": "prettier --write"
+  }
+}
