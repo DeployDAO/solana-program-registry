@@ -43,7 +43,7 @@ jobs:
           authToken: \${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Perform verifiable build
         run: |
-          curl https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
+          curl -L https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
           tar xzvf release.tar.gz
           mkdir artifacts
           nix shell .#ci --command anchor build --verifiable --solana-version ${solanaVersion}
