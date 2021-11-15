@@ -57,17 +57,17 @@ jobs:
           echo '\`\`\`' >> artifacts/README.md
           nix shell .#anchor-${anchorVersion} --command anchor --version >> artifacts/README.md
           date >> artifacts/README.md
-          sha256sum release.tar.gz >> artifacts/README.md
+          cat artifacts/release-checksums.txt >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
 
           echo '## Program checksums' >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
-          sha256sum target/verifiable/* >> artifacts/README.md
+          cat artifacts/program-checksums.txt >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
 
           echo '## IDL checksums' >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
-          sha256sum target/idl/* > artifacts/README.md
+          cat artifacts/idl-checksums.txt > artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
