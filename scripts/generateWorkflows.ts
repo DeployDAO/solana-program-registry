@@ -1,12 +1,6 @@
 import * as fs from "fs/promises";
 import { parse } from "yaml";
 
-const codeBlock = (inner: string): string => `
-          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
-${inner}
-          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
-`;
-
 const makeWorkflowYaml = ({
   repo,
   tag,
@@ -55,26 +49,19 @@ jobs:
           mv $(cat dirname)/target/verifiable/ artifacts/verifiable/
           mv $(cat dirname)/target/idl/ artifacts/idl/
 
-          sha256sum release.tar.gz > artifacts/release-checksums.txt
-          sha256sum artifacts/verifiable/* > artifacts/program-checksums.txt
-          sha256sum artifacts/idl/* > artifacts/idl-checksums.txt
+          sha256sum release.tar.gz >> artifacts/checksums.txt
+          sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
+          sha256sum artifacts/idl/* >> artifacts/checksums.txt
 
+          echo '---'
+          echo 'anchorVersion: "$(nix shell .#anchor-${anchorVersion} --command anchor --version)"'
+          echo 'createdAt: "$(date)"'
+          echo '---'
           echo '# ${repo} ${tag}' >> artifacts/README.md
-          ${codeBlock(`
-          nix shell .#anchor-${anchorVersion} --command anchor --version >> artifacts/README.md
-          date >> artifacts/README.md
-          cat artifacts/release-checksums.txt >> artifacts/README.md
-          `)}
-
-          echo '## Program checksums' >> artifacts/README.md
-          ${codeBlock(`
-          cat artifacts/program-checksums.txt >> artifacts/README.md
-          `)}
-
-          echo '## IDL checksums' >> artifacts/README.md
-          ${codeBlock(`
-          cat artifacts/idl-checksums.txt > artifacts/README.md
-          `)}
+          echo '## Checksums' >> artifacts/README.md
+          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+          cat artifacts/checksums.txt >> artifacts/README.md
+          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
         with:
