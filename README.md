@@ -22,7 +22,7 @@ It works as follows:
 
 The goal of the Solana Program Registry is to create a way for people to easily verify the programs they interact with on-chain. Some tools we'd like to see built include:
 
-- A tool to download the program binary from the blockchain and verify it trustlessly, either via CLI or via the browser
+- A tool to download the program binary from the blockchain and verify the hash locally, either via CLI or via the browser
 - A tool to verify the contents of BPF Upgradeable Loader program data buffers
 - An integration with a Solana block explorer
 - Wallet integrations, to warn users if they are interacting with unverified source code
