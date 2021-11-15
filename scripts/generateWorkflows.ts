@@ -44,8 +44,6 @@ jobs:
       - name: Download verifiable tarball of program
         run: |
           curl https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
-          mkdir build
-          cd build
           tar xzvf release.tar.gz
 
           mkdir artifacts
