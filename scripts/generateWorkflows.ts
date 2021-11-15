@@ -11,7 +11,8 @@ const makeWorkflowYaml = ({
   tag: string;
   slug: string;
   solanaVersion?: string;
-}) => `
+}) => {
+  return `
 name: Verify ${repo} ${tag}
 
 on:
@@ -41,14 +42,15 @@ jobs:
         with:
           name: saber
           authToken: \${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Download sources from GitHub
+        run: curl -L https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
+      - name: Extract sources
+        run: tar xzvf release.tar.gz
       - name: Perform verifiable build
-        run: |
-          curl -L https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
-          tar xzvf release.tar.gz
-          mkdir artifacts
-          nix shell .#ci --command anchor build --verifiable --solana-version ${solanaVersion}
+        run: nix shell .#ci --command anchor build --verifiable --solana-version ${solanaVersion}
       - name: Record program artifacts
         run: |
+          mkdir artifacts
           mv target/verifiable/ artifacts/verifiable/
           mv target/idl/ artifacts/idl/
 
@@ -80,6 +82,7 @@ jobs:
           publish_branch: verify-${slug}
           publish_dir: ./artifacts/
 `;
+};
 
 const generateWorkflows = async () => {
   const programsListRaw = await fs.readFile(`${__dirname}/../programs.yml`);
