@@ -47,7 +47,7 @@ jobs:
       - name: Extract sources
         run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
       - name: Perform verifiable build
-        run: cd $(cat dirname) && nix shell .#ci --command anchor build --verifiable --solana-version ${solanaVersion}
+        run: cd $(cat dirname) && nix shell ../#ci --command anchor build --verifiable --solana-version ${solanaVersion}
       - name: Record program artifacts
         run: |
           mkdir artifacts
