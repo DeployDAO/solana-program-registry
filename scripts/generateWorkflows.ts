@@ -1,6 +1,12 @@
 import * as fs from "fs/promises";
 import { parse } from "yaml";
 
+const codeBlock = (inner: string): string => `
+  echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+  ${inner}
+  echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+`;
+
 const makeWorkflowYaml = ({
   repo,
   tag,
@@ -54,21 +60,21 @@ jobs:
           sha256sum artifacts/idl/* > artifacts/idl-checksums.txt
 
           echo '# ${repo} ${tag}' >> artifacts/README.md
-          echo '\`\`\`' >> artifacts/README.md
+          ${codeBlock(`
           nix shell .#anchor-${anchorVersion} --command anchor --version >> artifacts/README.md
           date >> artifacts/README.md
           cat artifacts/release-checksums.txt >> artifacts/README.md
-          echo '\`\`\`' >> artifacts/README.md
+          `)}
 
           echo '## Program checksums' >> artifacts/README.md
-          echo '\`\`\`' >> artifacts/README.md
+          ${codeBlock(`
           cat artifacts/program-checksums.txt >> artifacts/README.md
-          echo '\`\`\`' >> artifacts/README.md
+          `)}
 
           echo '## IDL checksums' >> artifacts/README.md
-          echo '\`\`\`' >> artifacts/README.md
+          ${codeBlock(`
           cat artifacts/idl-checksums.txt > artifacts/README.md
-          echo '\`\`\`' >> artifacts/README.md
+          `)}
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
         with:
