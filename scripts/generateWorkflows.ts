@@ -53,7 +53,7 @@ jobs:
 
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
-          nix shell ../#anchor-0_18_0 --command anchor --version >> artifacts/README.md
+          nix shell .#anchor-0_18_0 --command anchor --version >> artifacts/README.md
           date >> artifacts/README.md
           sha256sum release.tar.gz >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
