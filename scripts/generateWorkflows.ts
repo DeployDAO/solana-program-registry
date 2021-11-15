@@ -53,13 +53,13 @@ jobs:
           sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
           sha256sum artifacts/idl/* >> artifacts/checksums.txt
 
-          echo '---'
-          echo 'anchorVersion: "$(nix shell .#anchor-${anchorVersion} --command anchor --version)"'
-          echo 'createdAt: "$(date)"'
-          echo 'repo: "${repo}"'
-          echo 'tag: "${tag}"'
-          echo 'slug: "${slug}"'
-          echo '---'
+          echo '---' >> artifacts/README.md
+          echo 'anchorVersion: "$(nix shell .#anchor-${anchorVersion} --command anchor --version)"' >> artifacts/README.md
+          echo 'createdAt: "$(date)"' >> artifacts/README.md
+          echo 'repo: "${repo}"' >> artifacts/README.md
+          echo 'tag: "${tag}"' >> artifacts/README.md
+          echo 'slug: "${slug}"' >> artifacts/README.md
+          echo '---' >> artifacts/README.md
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '## Checksums' >> artifacts/README.md
           echo '\\\`\\\`\\\`' >> artifacts/README.md
