@@ -5,12 +5,10 @@ const makeWorkflowYaml = ({
   repo,
   tag,
   slug,
-  solanaVersion = "1.7.11",
 }: {
   repo: string;
   tag: string;
   slug: string;
-  solanaVersion?: string;
 }) => {
   return `
 name: Verify ${repo} ${tag}
@@ -19,11 +17,6 @@ on:
   push:
     paths:
       - ".github/workflows/verify-${slug}.yml"
-
-env:
-  CARGO_TERM_COLOR: always
-  SOLANA_VERSION: "${solanaVersion}"
-  RUST_TOOLCHAIN: nightly-2021-09-01
 
 jobs:
   release-binaries:
@@ -47,7 +40,7 @@ jobs:
       - name: Extract sources
         run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
       - name: Perform verifiable build
-        run: cd $(cat dirname) && nix shell ../#ci --command anchor build --verifiable --solana-version ${solanaVersion}
+        run: cd $(cat dirname) && nix shell ../#anchor-0_18_0 --command anchor build --verifiable
       - name: Record program artifacts
         run: |
           mkdir artifacts

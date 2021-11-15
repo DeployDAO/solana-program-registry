@@ -20,7 +20,9 @@
           overlays = [ saber-overlay.overlay ];
         };
       in {
+        packages.anchor-0_17_0 = pkgs.anchor-0_17_0;
+        packages.anchor-0_18_0 = pkgs.anchor-0_18_0;
+
         devShell = import ./shell.nix { inherit pkgs; };
-        packages.ci = import ./ci.nix { inherit pkgs; };
       });
 }
