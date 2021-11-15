@@ -54,8 +54,8 @@ jobs:
           sha256sum artifacts/idl/* >> artifacts/checksums.txt
 
           echo '---' >> artifacts/README.md
-          echo 'anchorVersion: "$(nix shell .#anchor-${anchorVersion} --command anchor --version)"' >> artifacts/README.md
-          echo 'createdAt: "$(date)"' >> artifacts/README.md
+          echo "anchorVersion: \\"$(nix shell .#anchor-${anchorVersion} --command anchor --version)\\"" >> artifacts/README.md
+          echo "createdAt: \\"$(date)\\"" >> artifacts/README.md
           echo 'repo: "${repo}"' >> artifacts/README.md
           echo 'tag: "${tag}"' >> artifacts/README.md
           echo 'slug: "${slug}"' >> artifacts/README.md
