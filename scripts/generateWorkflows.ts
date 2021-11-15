@@ -5,10 +5,12 @@ const makeWorkflowYaml = ({
   repo,
   tag,
   slug,
+  anchorVersion = "0_18_0",
 }: {
   repo: string;
   tag: string;
   slug: string;
+  anchorVersion?: string;
 }) => {
   return `
 name: Verify ${repo} ${tag}
@@ -40,7 +42,7 @@ jobs:
       - name: Extract sources
         run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
       - name: Perform verifiable build
-        run: cd $(cat dirname) && nix shell ../#anchor-0_18_0 --command anchor build --verifiable
+        run: cd $(cat dirname) && nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable
       - name: Record program artifacts
         run: |
           mkdir artifacts
@@ -53,7 +55,7 @@ jobs:
 
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
-          nix shell .#anchor-0_18_0 --command anchor --version >> artifacts/README.md
+          nix shell .#anchor-${anchorVersion} --command anchor --version >> artifacts/README.md
           date >> artifacts/README.md
           sha256sum release.tar.gz >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
