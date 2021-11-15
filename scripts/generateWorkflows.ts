@@ -62,9 +62,9 @@ jobs:
           echo '---'
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '## Checksums' >> artifacts/README.md
-          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+          echo '\\\\\`\\\\\`\\\\\`' >> artifacts/README.md
           cat artifacts/checksums.txt >> artifacts/README.md
-          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+          echo '\\\\\`\\\\\`\\\\\`' >> artifacts/README.md
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
         with:
