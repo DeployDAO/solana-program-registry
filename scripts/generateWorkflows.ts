@@ -2,9 +2,9 @@ import * as fs from "fs/promises";
 import { parse } from "yaml";
 
 const codeBlock = (inner: string): string => `
-  echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
-  ${inner}
-  echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
+${inner}
+          echo '\\\\\\\`\\\\\\\`\\\\\\\`' >> artifacts/README.md
 `;
 
 const makeWorkflowYaml = ({
