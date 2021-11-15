@@ -1,7 +1,11 @@
-# DeployDAO Verified Programs
+# Solana Program Registry
 
-Automatic Solana program source code verification, powered by GitHub Actions. 🚀
+A verified registry of open source Solana programs. 🚀
+
+## About
+
+The Solana Program Registry is a set of scripts that automatically builds verifiable sources of Solana programs using GitHub Actions.
 
 ## License
 
-AGPL-3.0
+Apache 2.0.
