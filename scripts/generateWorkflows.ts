@@ -45,18 +45,18 @@ jobs:
       - name: Download sources from GitHub
         run: curl -L https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
       - name: Extract sources
-        run: tar xzvf release.tar.gz
+        run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
       - name: Perform verifiable build
-        run: nix shell .#ci --command anchor build --verifiable --solana-version ${solanaVersion}
+        run: cd $(cat dirname) && nix shell .#ci --command anchor build --verifiable --solana-version ${solanaVersion}
       - name: Record program artifacts
         run: |
           mkdir artifacts
-          mv target/verifiable/ artifacts/verifiable/
-          mv target/idl/ artifacts/idl/
+          mv $(cat dirname)/target/verifiable/ artifacts/verifiable/
+          mv $(cat dirname)/target/idl/ artifacts/idl/
 
           sha256sum release.tar.gz > artifacts/release-checksums.txt
-          sha256sum target/verifiable/* > artifacts/program-checksums.txt
-          sha256sum target/idl/* > artifacts/idl-checksums.txt
+          sha256sum artifacts/verifiable/* > artifacts/program-checksums.txt
+          sha256sum artifacts/idl/* > artifacts/idl-checksums.txt
 
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '\`\`\`' >> artifacts/README.md
