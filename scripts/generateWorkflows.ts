@@ -56,6 +56,9 @@ jobs:
           echo '---'
           echo 'anchorVersion: "$(nix shell .#anchor-${anchorVersion} --command anchor --version)"'
           echo 'createdAt: "$(date)"'
+          echo 'repo: "${repo}"'
+          echo 'tag: "${tag}"'
+          echo 'slug: "${slug}"'
           echo '---'
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '## Checksums' >> artifacts/README.md
