@@ -46,6 +46,7 @@ jobs:
       - name: Extract addresses
         run: |
           cd $(cat dirname)
+          ls
           nix shell ../#devShell --command bash -c 'cat Anchor.toml | yj -t | jq .programs.mainnet > addresses.json'
           echo "Addresses"
           cat addresses.json
