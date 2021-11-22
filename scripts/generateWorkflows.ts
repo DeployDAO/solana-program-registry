@@ -42,7 +42,7 @@ jobs:
       - name: Extract sources
         run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
       - name: Login to Anchor
-        run: nix shell ../#anchor-${anchorVersion} --command anchor login \${{ secrets.ANCHOR_AUTH_TOKEN }}
+        run: nix shell ./#anchor-${anchorVersion} --command anchor login \${{ secrets.ANCHOR_AUTH_TOKEN }}
       - name: Extract addresses
         run: |
           cd $(cat dirname)
