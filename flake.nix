@@ -19,14 +19,15 @@
           inherit system;
           overlays = [ saber-overlay.overlay ];
         };
+        devShell = pkgs.buildEnv {
+          name = "dev-shell";
+          paths = with pkgs; [ yj jq bash findutils ];
+        };
       in {
         packages.anchor-0_17_0 = pkgs.anchor-0_17_0;
         packages.anchor-0_18_0 = pkgs.anchor-0_18_0;
-        packages.devShell = pkgs.buildEnv {
-          name = "dev-shell";
-          paths = with pkgs; [ yj jq bash ];
-        };
+        packages.devShell = devShell;
 
-        devShell = import ./shell.nix { inherit pkgs; };
+        devShell = pkgs.mkShell { buildInputs = [ devShell ]; };
       });
 }
