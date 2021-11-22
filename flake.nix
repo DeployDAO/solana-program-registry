@@ -22,6 +22,10 @@
       in {
         packages.anchor-0_17_0 = pkgs.anchor-0_17_0;
         packages.anchor-0_18_0 = pkgs.anchor-0_18_0;
+        packages.devShell = pkgs.buildEnv {
+          name = "dev-shell";
+          paths = with pkgs; [ yj jq bash ];
+        };
 
         devShell = import ./shell.nix { inherit pkgs; };
       });

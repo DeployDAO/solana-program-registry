@@ -41,13 +41,22 @@ jobs:
         run: curl -L https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz > release.tar.gz
       - name: Extract sources
         run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
+      - name: Login to Anchor
+        run: nix shell ../#anchor-${anchorVersion} --command anchor login \${{ secrets.ANCHOR_AUTH_TOKEN }}
+      - name: Extract addresses
+        run: |
+          cd $(cat dirname)
+          nix shell ../#devShell --command "bash -c 'cat Anchor.toml | yj -t | jq .programs.mainnet > addresses.json'"
+          nix shell ../#anchor-${anchorVersion} --command "bash -c 'cat addresses.json | jq -r '.programs.mainnet | keys | .[]' | xargs anchor publish --provider.cluster mainnet"
       - name: Perform verifiable build
         run: cd $(cat dirname) && nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable
+      - name: Upload artifacts
       - name: Record program artifacts
         run: |
           mkdir artifacts
           mv $(cat dirname)/target/verifiable/ artifacts/verifiable/
           mv $(cat dirname)/target/idl/ artifacts/idl/
+          mv $(cat dirname)/addresses.json artifacts/addresses.json
 
           sha256sum release.tar.gz >> artifacts/checksums.txt
           sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
