@@ -47,6 +47,8 @@ jobs:
         run: |
           cd $(cat dirname)
           nix shell ../#devShell --command bash -c 'cat Anchor.toml | yj -t | jq .programs.mainnet > addresses.json'
+          echo "Addresses"
+          cat addresses.json
       - name: Perform verifiable build
         run: cd $(cat dirname) && nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable
       - name: Publish build to Anchor Registry
