@@ -46,13 +46,13 @@ jobs:
       - name: Extract addresses
         run: |
           cd $(cat dirname)
-          nix shell ../#devShell --command "bash -c 'cat Anchor.toml | yj -t | jq .programs.mainnet > addresses.json'"
+          nix shell ../#devShell --command bash -c 'cat Anchor.toml | yj -t | jq .programs.mainnet > addresses.json'
       - name: Perform verifiable build
         run: cd $(cat dirname) && nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable
       - name: Publish build to Anchor Registry
         run: |
           cd $(cat dirname)
-          nix shell ../#anchor-${anchorVersion} --command "bash -c 'cat addresses.json | jq -r '.programs.mainnet | keys | .[]' | xargs anchor publish --provider.cluster mainnet"
+          nix shell ../#anchor-${anchorVersion} --command bash -c 'cat addresses.json | jq -r ".programs.mainnet | keys | .[]" | xargs anchor publish --provider.cluster mainnet'
       - name: Record program artifacts
         run: |
           mkdir artifacts
