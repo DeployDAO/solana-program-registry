@@ -52,7 +52,7 @@ jobs:
       - name: Publish build to Anchor Registry
         run: |
           cd $(cat dirname)
-          nix shell ../#anchor-${anchorVersion} --command bash -c 'cat addresses.json | jq -r ".programs.mainnet | keys | .[]" | xargs anchor publish --provider.cluster mainnet'
+          nix shell ../#anchor-${anchorVersion} --command bash -c 'cat addresses.json | jq -r ". | keys | .[]" | xargs anchor publish --provider.cluster mainnet'
       - name: Record program artifacts
         run: |
           mkdir artifacts
