@@ -21,7 +21,7 @@
         };
         devShell = pkgs.buildEnv {
           name = "dev-shell";
-          paths = with pkgs; [ yj jq bash findutils ];
+          paths = with pkgs; [ yj jq bash findutils coreutils ];
         };
       in {
         packages.anchor-0_17_0 = pkgs.anchor-0_17_0;
