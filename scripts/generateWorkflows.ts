@@ -64,6 +64,8 @@ jobs:
           sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
           sha256sum artifacts/idl/* >> artifacts/checksums.txt
 
+          cat artifacts/checksums.txt | jq -R '. | split("  ") | [{key:.[0],value:.[1]}] | from_entries' | jq -s add > artifacts/checksums.json
+
           echo '---' >> artifacts/README.md
           echo "anchorVersion: \\"$(nix shell .#anchor-${anchorVersion} --command anchor --version)\\"" >> artifacts/README.md
           echo "createdAt: \\"$(date)\\"" >> artifacts/README.md
