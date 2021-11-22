@@ -53,7 +53,6 @@ jobs:
         run: |
           cd $(cat dirname)
           nix shell ../#anchor-${anchorVersion} --command "bash -c 'cat addresses.json | jq -r '.programs.mainnet | keys | .[]' | xargs anchor publish --provider.cluster mainnet"
-      - name: Upload artifacts
       - name: Record program artifacts
         run: |
           mkdir artifacts
