@@ -58,7 +58,7 @@ jobs:
           cat addresses.json | jq .
           nix shell ../#devShell --command bash -c 'cat addresses.json | jq -r ". | keys | .[]" > programs.txt'
           for $PROGRAM in $(cat programs.txt); do
-            nix shell ../#anchor-${anchorVersion} --command anchor publish $PROGRAM --provider.cluster mainnet
+            nix shell ../#anchor-${anchorVersion} --command anchor publish "$PROGRAM" --provider.cluster mainnet
           done
       - name: Record program artifacts
         run: |
