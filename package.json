@@ -12,7 +12,7 @@
     "@saberhq/eslint-config": "^1.7.4",
     "@types/eslint": "^8.2.0",
     "@types/lodash": "^4.14.177",
-    "@types/node": "^16.11.9",
+    "@types/node": "^16.11.10",
     "@types/prettier": "^2.4.2",
     "@types/yaml": "^1.9.7",
     "eslint": "^8.3.0",
