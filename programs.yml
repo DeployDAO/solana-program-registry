@@ -1,11 +1,8 @@
 # List of all programs to build/verify and their associated Git tags.
 # This file is YAML to minimize merge conflicts.
 
-"saber-hq/merkle-distributor":
-  - v0.2.2
 "QuarryProtocol/quarry":
   - v1.10.2
+  - v1.10.5
 "GokiProtocol/goki":
-  - v0.2.1
-"DeployDAO/migrator":
-  - v0.1.0
+  - v0.3.1
