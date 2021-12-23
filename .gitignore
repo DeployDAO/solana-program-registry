@@ -7,4 +7,6 @@
 .pnp.*
 
 .eslintcache
+
+index/
 out/

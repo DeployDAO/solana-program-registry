@@ -8,6 +8,7 @@
   "license": "Apache-2.0",
   "packageManager": "yarn@3.1.1",
   "devDependencies": {
+    "@project-serum/anchor": "^0.19.1-beta.1",
     "@rushstack/eslint-patch": "^1.1.0",
     "@saberhq/eslint-config": "^1.11.2",
     "@types/eslint": "^8.2.1",
@@ -15,6 +16,7 @@
     "@types/node": "^16.11.14",
     "@types/prettier": "^2.4.2",
     "@types/yaml": "^1.9.7",
+    "axios": "^0.24.0",
     "eslint": "^8.5.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-plugin-import": "^2.25.3",
@@ -32,6 +34,7 @@
   "scripts": {
     "lint": "eslint . --cache",
     "generate-workflows": "ts-node scripts/generateWorkflows.ts",
+    "generate-index": "ts-node scripts/generateIndex.ts",
     "prepare": "husky install"
   },
   "lint-staged": {
