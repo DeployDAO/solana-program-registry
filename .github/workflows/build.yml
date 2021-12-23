@@ -29,6 +29,7 @@ jobs:
       - run: cp *.nix out/
       - run: cp flake.lock out/
       - run: cp README-builder.md out/README.md
+      - run: cp LICENSE.txt out/
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
         with:
