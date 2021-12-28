@@ -51,7 +51,11 @@ jobs:
           echo "Addresses"
           cat addresses.json
       - name: Perform verifiable build
-        run: cd $(cat dirname) && nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable
+        run: |
+          cd $(cat dirname)
+          for PROGRAM in $(cat programs.txt); do
+            nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable --program-name "$PROGRAM"
+          done
       - name: Publish build to Anchor Registry
         run: |
           cd $(cat dirname)
