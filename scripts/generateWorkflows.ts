@@ -53,14 +53,14 @@ jobs:
       - name: Perform verifiable build
         run: |
           cd $(cat dirname)
+          cat addresses.json | jq .
+          nix shell ../#devShell --command bash -c 'cat addresses.json | jq -r ". | keys | .[]" > programs.txt'
           for PROGRAM in $(cat programs.txt); do
             nix shell ../#anchor-${anchorVersion} --command anchor build --verifiable --program-name "$PROGRAM"
           done
       - name: Publish build to Anchor Registry
         run: |
           cd $(cat dirname)
-          cat addresses.json | jq .
-          nix shell ../#devShell --command bash -c 'cat addresses.json | jq -r ". | keys | .[]" > programs.txt'
           for PROGRAM in $(cat programs.txt); do
             yes 'yes' | nix shell ../#anchor-${anchorVersion} --command anchor publish "$PROGRAM" --provider.cluster mainnet
           done
