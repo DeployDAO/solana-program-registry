@@ -10,10 +10,10 @@
   "devDependencies": {
     "@project-serum/anchor": "^0.19.1-beta.1",
     "@rushstack/eslint-patch": "^1.1.0",
-    "@saberhq/eslint-config": "^1.11.3",
+    "@saberhq/eslint-config": "^1.12.6",
     "@types/eslint": "^8.2.1",
     "@types/lodash": "^4.14.178",
-    "@types/node": "^16.11.17",
+    "@types/node": "^17.0.5",
     "@types/prettier": "^2.4.2",
     "@types/yaml": "^1.9.7",
     "axios": "^0.24.0",
