@@ -73,7 +73,11 @@ jobs:
 
           sha256sum release.tar.gz >> artifacts/checksums.txt
           sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
-          sha256sum artifacts/idl/* >> artifacts/checksums.txt
+
+          # IDLs might not be generated
+          if compgen -G "artifacts/idl/*" > /dev/null; then
+            sha256sum artifacts/idl/* >> artifacts/checksums.txt
+          fi
 
           cat artifacts/checksums.txt | jq -R '. | split("  ") | [{key:.[0],value:.[1]}] | from_entries' | jq -s add > artifacts/checksums.json
 
