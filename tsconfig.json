@@ -1,7 +1,9 @@
 {
   "extends": "@saberhq/tsconfig/tsconfig.lib.json",
   "compilerOptions": {
-    "lib": ["ES2019"]
+    "lib": ["ES2019"],
+    "module": "CommonJS",
+    "types": ["node"]
   },
   "include": ["src/", "scripts/"]
 }
