@@ -19,6 +19,7 @@ const generateIndex = async () => {
   await fs.mkdir(indexDir, { recursive: true });
   await fs.mkdir(`${indexDir}idls/`, { recursive: true });
   await fs.mkdir(`${indexDir}artifacts/`, { recursive: true });
+  await fs.mkdir(`${indexDir}artifacts-by-id/`, { recursive: true });
 
   const lastTags = Object.entries(programsList).map(([repo, tags]) => {
     const lastTag = tags[tags.length - 1];
@@ -45,13 +46,20 @@ const generateIndex = async () => {
         buildURL({ slug, file: "checksums.json" })
       );
       for (const [programName, address] of Object.entries(addresses)) {
-        const { data: idl } = await axios.get<Idl>(
-          buildURL({ slug, file: `idl/${programName}.json` })
-        );
-        await fs.writeFile(
-          `${indexDir}idls/${address}.json`,
-          JSON.stringify(idl)
-        );
+        try {
+          const { data: idl } = await axios.get<Idl>(
+            buildURL({ slug, file: `idl/${programName}.json` })
+          );
+          await fs.writeFile(
+            `${indexDir}idls/${address}.json`,
+            JSON.stringify(idl)
+          );
+        } catch (e) {
+          if ((e as AxiosError).response?.status !== 404) {
+            throw e;
+          }
+          console.warn(`Could not find idl for ${repo} ${tag}`);
+        }
 
         const [org, repoName] = repo.split("/");
         if (!org || !repoName) {
@@ -90,6 +98,11 @@ const generateIndex = async () => {
     tags.map((tag) => [repo, tag] as const)
   );
   for (const [repo, tag] of allTags) {
+    const tagsOfRepo = programsList[repo];
+    const isLatest = !!(
+      tagsOfRepo && tagsOfRepo[tagsOfRepo.length - 1] === tag
+    );
+
     const slug = `${repo.replace("/", "__")}-${tag}`;
 
     const [org, repoName] = repo.split("/");
@@ -103,17 +116,37 @@ const generateIndex = async () => {
         buildURL({ slug, file: "checksums.json" })
       );
       for (const [checksum, fileName] of Object.entries(checksums)) {
+        console.log(`processing ${checksum}`);
         if (fileName.endsWith(".so")) {
           const programNameRaw = basename(fileName).slice(0, -".so".length);
           const programName = startCase(programNameRaw);
+          const id = `${org}/${programNameRaw}`;
+          const artifactMeta = {
+            id,
+            tag,
+            name: `${orgName} - ${programName} ${tag}`,
+            source: `https://github.com/${repo}/tree/${tag}`,
+            url: buildURL({ slug, file: fileName }),
+            checksum,
+          };
+          const artifactMetaStr = JSON.stringify(artifactMeta);
           await fs.writeFile(
             `${indexDir}artifacts/${checksum}.json`,
-            JSON.stringify({
-              name: `${orgName} - ${programName} ${tag}`,
-              source: `https://github.com/${repo}/tree/${tag}`,
-              url: buildURL({ slug, file: fileName }),
-            })
+            artifactMetaStr
           );
+          await fs.mkdir(`${indexDir}artifacts-by-id/${org}`, {
+            recursive: true,
+          });
+          await fs.writeFile(
+            `${indexDir}artifacts-by-id/${id}@${tag}.json`,
+            artifactMetaStr
+          );
+          if (isLatest) {
+            await fs.writeFile(
+              `${indexDir}artifacts-by-id/${id}@latest.json`,
+              artifactMetaStr
+            );
+          }
         }
       }
     } catch (e) {
