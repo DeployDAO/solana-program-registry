@@ -3,6 +3,7 @@ import type { AxiosError } from "axios";
 import axios from "axios";
 import * as fs from "fs/promises";
 import { startCase } from "lodash";
+import { basename } from "path";
 import invariant from "tiny-invariant";
 
 import { loadOrganizations, loadPrograms } from "../src/config";
@@ -90,15 +91,26 @@ const generateIndex = async () => {
   );
   for (const [repo, tag] of allTags) {
     const slug = `${repo.replace("/", "__")}-${tag}`;
+
+    const [org, repoName] = repo.split("/");
+    if (!org || !repoName) {
+      throw new Error(`invalid repo format: ${repo}`);
+    }
+    const orgName = orgsList[org]?.name ?? `@${org}`;
+
     try {
       const { data: checksums } = await axios.get<Record<string, string>>(
         buildURL({ slug, file: "checksums.json" })
       );
       for (const [checksum, fileName] of Object.entries(checksums)) {
         if (fileName.endsWith(".so")) {
+          const programNameRaw = basename(fileName).slice(0, -".so".length);
+          const programName = startCase(programNameRaw);
           await fs.writeFile(
             `${indexDir}artifacts/${checksum}.json`,
             JSON.stringify({
+              name: `${orgName} - ${programName} ${tag}`,
+              source: `https://github.com/${repo}/tree/${tag}`,
               url: buildURL({ slug, file: fileName }),
             })
           );
