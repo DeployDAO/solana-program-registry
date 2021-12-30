@@ -11,6 +11,9 @@ import { loadOrganizations, loadPrograms } from "../src/config";
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
 
+const buildDownloadURL = ({ slug, file }: { slug: string; file: string }) =>
+  `https://github.com/DeployDAO/verified-program-artifacts/raw/verify-${slug}/${file}`;
+
 const generateIndex = async () => {
   const programsList = await loadPrograms();
   const orgsList = await loadOrganizations();
@@ -126,7 +129,10 @@ const generateIndex = async () => {
             tag,
             name: `${orgName} - ${programName} ${tag}`,
             source: `https://github.com/${repo}/tree/${tag}`,
-            url: buildURL({ slug, file: fileName }),
+            url: buildDownloadURL({
+              slug,
+              file: `${fileName.slice("artifacts/".length)}`,
+            }),
             checksum,
           };
           const artifactMetaStr = JSON.stringify(artifactMeta);
