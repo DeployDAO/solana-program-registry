@@ -1,0 +1,24 @@
+# List of all GitHub organizations and associated information.
+# This file is YAML to minimize merge conflicts.
+
+saber-hq:
+  name: Saber
+  website: https://saber.so
+QuarryProtocol:
+  name: Quarry
+  website: https://quarry.so
+GokiProtocol:
+  name: Goki
+  website: https://goki.so
+SenchaHQ:
+  name: Sencha
+  website: https://sencha.so
+CrateProtocol:
+  name: Crate
+  website: https://crate.so
+cashioapp:
+  name: Cashio
+  website: https://cashio.app
+arrowprotocol:
+  name: Arrow
+  website: https://arrowprotocol.com

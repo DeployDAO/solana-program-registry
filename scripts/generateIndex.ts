@@ -4,17 +4,15 @@ import axios from "axios";
 import * as fs from "fs/promises";
 import { startCase } from "lodash";
 import invariant from "tiny-invariant";
-import { parse } from "yaml";
+
+import { loadOrganizations, loadPrograms } from "../src/config";
 
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
 
 const generateIndex = async () => {
-  const programsListRaw = await fs.readFile(`${__dirname}/../programs.yml`);
-  const programsList = parse(programsListRaw.toString()) as Record<
-    string,
-    string[]
-  >;
+  const programsList = await loadPrograms();
+  const orgsList = await loadOrganizations();
 
   const indexDir = `${__dirname}/../index/`;
   await fs.mkdir(indexDir, { recursive: true });
@@ -67,7 +65,9 @@ const generateIndex = async () => {
         }
 
         programs.push({
-          label: `${startCase(org)} - ${startCase(programName)}`,
+          label: `${orgsList[org]?.name ?? `@${org}`} - ${startCase(
+            programName
+          )}`,
           name: programName,
           repo,
           tag,

@@ -11,6 +11,7 @@
     "@project-serum/anchor": "^0.19.1-beta.1",
     "@rushstack/eslint-patch": "^1.1.0",
     "@saberhq/eslint-config": "^1.12.6",
+    "@saberhq/tsconfig": "^1.12.9",
     "@types/eslint": "^8.2.1",
     "@types/lodash": "^4.14.178",
     "@types/node": "^17.0.5",
@@ -29,6 +30,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "tiny-invariant": "^1.2.0",
+    "tslib": "^2.3.1",
     "yaml": "^1.10.2"
   },
   "scripts": {

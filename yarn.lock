@@ -37,6 +37,7 @@ __metadata:
     "@project-serum/anchor": ^0.19.1-beta.1
     "@rushstack/eslint-patch": ^1.1.0
     "@saberhq/eslint-config": ^1.12.6
+    "@saberhq/tsconfig": ^1.12.9
     "@types/eslint": ^8.2.1
     "@types/lodash": ^4.14.178
     "@types/node": ^17.0.5
@@ -52,6 +53,7 @@ __metadata:
     prettier: ^2.5.1
     tiny-invariant: ^1.2.0
     ts-node: ^10.4.0
+    tslib: ^2.3.1
     typescript: ^4.5.4
     yaml: ^1.10.2
   languageName: unknown
@@ -230,6 +232,13 @@ __metadata:
   peerDependencies:
     eslint: ">=7"
   checksum: 13af8197ba8017eb1ea308226622d99f66b07e0a910a39f5bf7e4c662238d0b360733bb8be47dcf4ffc1cc1feb09d3a43ac32328a3998a85dc7debda594b1010
+  languageName: node
+  linkType: hard
+
+"@saberhq/tsconfig@npm:^1.12.9":
+  version: 1.12.9
+  resolution: "@saberhq/tsconfig@npm:1.12.9"
+  checksum: 0086006346b6d0ab485dfa177d5d850b63eef6b1a9b07a625a37bab891790defb1b81247d43a6427a82e35fc7bf26f6e1b1a5448ed428b850283dde2db2f9447
   languageName: node
   linkType: hard
 
@@ -3517,7 +3526,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.3":
+"tslib@npm:^2.0.3, tslib@npm:^2.3.1":
   version: 2.3.1
   resolution: "tslib@npm:2.3.1"
   checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
