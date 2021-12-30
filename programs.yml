@@ -10,7 +10,6 @@
   - v0.4.0
   - v0.5.4
 "SenchaHQ/sencha":
-  - v0.9.2
   - v0.9.3
   - v0.9.4
 "CrateProtocol/crate":
@@ -26,3 +25,4 @@
   - v1.6.5
 "saber-hq/saber-periphery":
   - v1.0.5
+  - v1.0.6
