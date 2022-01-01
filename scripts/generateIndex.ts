@@ -11,6 +11,7 @@ import {
   loadPrograms,
   makeProgramLabel,
 } from "../src/config";
+import { fetchBuildAddresses, fetchBuildChecksums } from "../src/fetchers";
 
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
@@ -48,12 +49,9 @@ const generateIndex = async () => {
     const build = describeBuild(repo, tag);
     const { slug, org } = build;
     try {
-      const { data: addresses } = await axios.get<Record<string, string>>(
-        buildURL({ slug, file: "addresses.json" })
-      );
-      const { data: checksums } = await axios.get<Record<string, string>>(
-        buildURL({ slug, file: "checksums.json" })
-      );
+      const addresses = await fetchBuildAddresses(build);
+      const checksums = await fetchBuildChecksums(build);
+
       for (const [programName, address] of Object.entries(addresses)) {
         let theIdl: Idl | null = null;
         try {
@@ -119,12 +117,11 @@ const generateIndex = async () => {
       tagsOfRepo && tagsOfRepo[tagsOfRepo.length - 1] === tag
     );
 
-    const { slug, org, source } = describeBuild(repo, tag);
+    const build = describeBuild(repo, tag);
+    const { slug, org, source } = build;
 
     try {
-      const { data: checksums } = await axios.get<Record<string, string>>(
-        buildURL({ slug, file: "checksums.json" })
-      );
+      const checksums = await fetchBuildChecksums(build);
       for (const [checksum, fileName] of Object.entries(checksums)) {
         console.log(`processing ${checksum}`);
         if (fileName.endsWith(".so")) {

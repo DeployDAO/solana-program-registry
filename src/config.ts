@@ -26,16 +26,18 @@ export const loadOrganizations = async (): Promise<
   return mapValues(orgsList, (org, github) => ({ ...org, github }));
 };
 
-export const describeBuild = (
-  repo: string,
-  tag: string
-): {
+/**
+ * Corresponds to a verified program build.
+ */
+export interface Build {
   slug: string;
   org: string;
   repoName: string;
   source: string;
   tag: string;
-} => {
+}
+
+export const describeBuild = (repo: string, tag: string): Build => {
   const slug = `${repo.replace("/", "__")}-${tag}`;
   const [org, repoName] = repo.split("/");
   if (!org || !repoName) {
