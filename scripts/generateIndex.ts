@@ -2,11 +2,15 @@ import type { Idl } from "@project-serum/anchor";
 import type { AxiosError } from "axios";
 import axios from "axios";
 import * as fs from "fs/promises";
-import { startCase } from "lodash";
 import { basename } from "path";
 import invariant from "tiny-invariant";
 
-import { loadOrganizations, loadPrograms } from "../src/config";
+import {
+  describeBuild,
+  loadOrganizations,
+  loadPrograms,
+  makeProgramLabel,
+} from "../src/config";
 
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
@@ -21,6 +25,7 @@ const generateIndex = async () => {
   const indexDir = `${__dirname}/../index/`;
   await fs.mkdir(indexDir, { recursive: true });
   await fs.mkdir(`${indexDir}idls/`, { recursive: true });
+  await fs.mkdir(`${indexDir}programs/`, { recursive: true });
   await fs.mkdir(`${indexDir}artifacts/`, { recursive: true });
   await fs.mkdir(`${indexDir}artifacts-by-id/`, { recursive: true });
 
@@ -40,7 +45,8 @@ const generateIndex = async () => {
   }[] = [];
 
   for (const [repo, tag] of lastTags) {
-    const slug = `${repo.replace("/", "__")}-${tag}`;
+    const build = describeBuild(repo, tag);
+    const { slug, org } = build;
     try {
       const { data: addresses } = await axios.get<Record<string, string>>(
         buildURL({ slug, file: "addresses.json" })
@@ -49,6 +55,7 @@ const generateIndex = async () => {
         buildURL({ slug, file: "checksums.json" })
       );
       for (const [programName, address] of Object.entries(addresses)) {
+        let theIdl: Idl | null = null;
         try {
           const { data: idl } = await axios.get<Idl>(
             buildURL({ slug, file: `idl/${programName}.json` })
@@ -57,6 +64,7 @@ const generateIndex = async () => {
             `${indexDir}idls/${address}.json`,
             JSON.stringify(idl)
           );
+          theIdl = idl;
         } catch (e) {
           if ((e as AxiosError).response?.status !== 404) {
             throw e;
@@ -64,10 +72,6 @@ const generateIndex = async () => {
           console.warn(`Could not find idl for ${repo} ${tag}`);
         }
 
-        const [org, repoName] = repo.split("/");
-        if (!org || !repoName) {
-          throw new Error(`invalid repo format: ${repo}`);
-        }
         const shasum = Object.entries(checksums).find(
           ([_, fileName]) =>
             fileName === `artifacts/verifiable/${programName}.so`
@@ -76,10 +80,19 @@ const generateIndex = async () => {
           throw new Error(`shasum not found for program: ${repo} ${tag}`);
         }
 
+        const tagsOfRepo = programsList[repo];
+        await fs.writeFile(
+          `${indexDir}programs/${address}.json`,
+          JSON.stringify({
+            label: makeProgramLabel(orgsList, org, programName),
+            latest: { ...build, shasum },
+            releases: tagsOfRepo?.map((tag) => describeBuild(repo, tag)) ?? [],
+            hasIDL: !!theIdl,
+          })
+        );
+
         programs.push({
-          label: `${orgsList[org]?.name ?? `@${org}`} - ${startCase(
-            programName
-          )}`,
+          label: makeProgramLabel(orgsList, org, programName),
           name: programName,
           repo,
           tag,
@@ -106,13 +119,7 @@ const generateIndex = async () => {
       tagsOfRepo && tagsOfRepo[tagsOfRepo.length - 1] === tag
     );
 
-    const slug = `${repo.replace("/", "__")}-${tag}`;
-
-    const [org, repoName] = repo.split("/");
-    if (!org || !repoName) {
-      throw new Error(`invalid repo format: ${repo}`);
-    }
-    const orgName = orgsList[org]?.name ?? `@${org}`;
+    const { slug, org, source } = describeBuild(repo, tag);
 
     try {
       const { data: checksums } = await axios.get<Record<string, string>>(
@@ -121,14 +128,14 @@ const generateIndex = async () => {
       for (const [checksum, fileName] of Object.entries(checksums)) {
         console.log(`processing ${checksum}`);
         if (fileName.endsWith(".so")) {
-          const programNameRaw = basename(fileName).slice(0, -".so".length);
-          const programName = startCase(programNameRaw);
-          const id = `${org}/${programNameRaw}`;
+          const programName = basename(fileName).slice(0, -".so".length);
+          const programLabel = makeProgramLabel(orgsList, org, programName);
+          const id = `${org}/${programName}`;
           const artifactMeta = {
             id,
             tag,
-            name: `${orgName} - ${programName} ${tag}`,
-            source: `https://github.com/${repo}/tree/${tag}`,
+            name: `${programLabel} ${tag}`,
+            source,
             url: buildDownloadURL({
               slug,
               file: `${fileName.slice("artifacts/".length)}`,

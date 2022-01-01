@@ -1,5 +1,5 @@
 import * as fs from "fs/promises";
-import { mapValues } from "lodash";
+import { mapValues, startCase } from "lodash";
 import { parse } from "yaml";
 
 export const loadPrograms = async (): Promise<
@@ -11,8 +11,8 @@ export const loadPrograms = async (): Promise<
 
 export interface Organization {
   name: string;
-  website: string;
   github: string;
+  website?: string;
 }
 
 export const loadOrganizations = async (): Promise<
@@ -25,3 +25,33 @@ export const loadOrganizations = async (): Promise<
   >;
   return mapValues(orgsList, (org, github) => ({ ...org, github }));
 };
+
+export const describeBuild = (
+  repo: string,
+  tag: string
+): {
+  slug: string;
+  org: string;
+  repoName: string;
+  source: string;
+  tag: string;
+} => {
+  const slug = `${repo.replace("/", "__")}-${tag}`;
+  const [org, repoName] = repo.split("/");
+  if (!org || !repoName) {
+    throw new Error(`invalid repo format: ${repo}`);
+  }
+  return {
+    slug,
+    org,
+    repoName,
+    source: `https://github.com/${repo}/tree/${tag}`,
+    tag,
+  };
+};
+
+export const makeProgramLabel = (
+  orgsList: Record<string, Organization>,
+  github: string,
+  programName: string
+) => `${orgsList[github]?.name ?? `@${github}`} - ${startCase(programName)}`;
