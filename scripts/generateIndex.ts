@@ -2,24 +2,33 @@ import type { Idl } from "@project-serum/anchor";
 import type { AxiosError } from "axios";
 import axios from "axios";
 import * as fs from "fs/promises";
-import { startCase } from "lodash";
+import { basename } from "path";
 import invariant from "tiny-invariant";
-import { parse } from "yaml";
+
+import {
+  describeBuild,
+  loadOrganizations,
+  loadPrograms,
+  makeProgramLabel,
+} from "../src/config";
+import { fetchBuildAddresses, fetchBuildChecksums } from "../src/fetchers";
 
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
 
+const buildDownloadURL = ({ slug, file }: { slug: string; file: string }) =>
+  `https://github.com/DeployDAO/verified-program-artifacts/raw/verify-${slug}/${file}`;
+
 const generateIndex = async () => {
-  const programsListRaw = await fs.readFile(`${__dirname}/../programs.yml`);
-  const programsList = parse(programsListRaw.toString()) as Record<
-    string,
-    string[]
-  >;
+  const programsList = await loadPrograms();
+  const orgsList = await loadOrganizations();
 
   const indexDir = `${__dirname}/../index/`;
   await fs.mkdir(indexDir, { recursive: true });
   await fs.mkdir(`${indexDir}idls/`, { recursive: true });
+  await fs.mkdir(`${indexDir}programs/`, { recursive: true });
   await fs.mkdir(`${indexDir}artifacts/`, { recursive: true });
+  await fs.mkdir(`${indexDir}artifacts-by-id/`, { recursive: true });
 
   const lastTags = Object.entries(programsList).map(([repo, tags]) => {
     const lastTag = tags[tags.length - 1];
@@ -37,27 +46,30 @@ const generateIndex = async () => {
   }[] = [];
 
   for (const [repo, tag] of lastTags) {
-    const slug = `${repo.replace("/", "__")}-${tag}`;
+    const build = describeBuild(repo, tag);
+    const { slug, org } = build;
     try {
-      const { data: addresses } = await axios.get<Record<string, string>>(
-        buildURL({ slug, file: "addresses.json" })
-      );
-      const { data: checksums } = await axios.get<Record<string, string>>(
-        buildURL({ slug, file: "checksums.json" })
-      );
-      for (const [programName, address] of Object.entries(addresses)) {
-        const { data: idl } = await axios.get<Idl>(
-          buildURL({ slug, file: `idl/${programName}.json` })
-        );
-        await fs.writeFile(
-          `${indexDir}idls/${address}.json`,
-          JSON.stringify(idl)
-        );
+      const addresses = await fetchBuildAddresses(build);
+      const checksums = await fetchBuildChecksums(build);
 
-        const [org, repoName] = repo.split("/");
-        if (!org || !repoName) {
-          throw new Error(`invalid repo format: ${repo}`);
+      for (const [programName, address] of Object.entries(addresses)) {
+        let theIdl: Idl | null = null;
+        try {
+          const { data: idl } = await axios.get<Idl>(
+            buildURL({ slug, file: `idl/${programName}.json` })
+          );
+          await fs.writeFile(
+            `${indexDir}idls/${address}.json`,
+            JSON.stringify(idl)
+          );
+          theIdl = idl;
+        } catch (e) {
+          if ((e as AxiosError).response?.status !== 404) {
+            throw e;
+          }
+          console.warn(`Could not find idl for ${repo} ${tag}`);
         }
+
         const shasum = Object.entries(checksums).find(
           ([_, fileName]) =>
             fileName === `artifacts/verifiable/${programName}.so`
@@ -66,8 +78,19 @@ const generateIndex = async () => {
           throw new Error(`shasum not found for program: ${repo} ${tag}`);
         }
 
+        const tagsOfRepo = programsList[repo];
+        await fs.writeFile(
+          `${indexDir}programs/${address}.json`,
+          JSON.stringify({
+            label: makeProgramLabel(orgsList, org, programName),
+            latest: { ...build, shasum },
+            releases: tagsOfRepo?.map((tag) => describeBuild(repo, tag)) ?? [],
+            hasIDL: !!theIdl,
+          })
+        );
+
         programs.push({
-          label: `${startCase(org)} - ${startCase(programName)}`,
+          label: makeProgramLabel(orgsList, org, programName),
           name: programName,
           repo,
           tag,
@@ -89,19 +112,51 @@ const generateIndex = async () => {
     tags.map((tag) => [repo, tag] as const)
   );
   for (const [repo, tag] of allTags) {
-    const slug = `${repo.replace("/", "__")}-${tag}`;
+    const tagsOfRepo = programsList[repo];
+    const isLatest = !!(
+      tagsOfRepo && tagsOfRepo[tagsOfRepo.length - 1] === tag
+    );
+
+    const build = describeBuild(repo, tag);
+    const { slug, org, source } = build;
+
     try {
-      const { data: checksums } = await axios.get<Record<string, string>>(
-        buildURL({ slug, file: "checksums.json" })
-      );
+      const checksums = await fetchBuildChecksums(build);
       for (const [checksum, fileName] of Object.entries(checksums)) {
+        console.log(`processing ${checksum}`);
         if (fileName.endsWith(".so")) {
+          const programName = basename(fileName).slice(0, -".so".length);
+          const programLabel = makeProgramLabel(orgsList, org, programName);
+          const id = `${org}/${programName}`;
+          const artifactMeta = {
+            id,
+            tag,
+            name: `${programLabel} ${tag}`,
+            source,
+            url: buildDownloadURL({
+              slug,
+              file: `${fileName.slice("artifacts/".length)}`,
+            }),
+            checksum,
+          };
+          const artifactMetaStr = JSON.stringify(artifactMeta);
           await fs.writeFile(
             `${indexDir}artifacts/${checksum}.json`,
-            JSON.stringify({
-              url: buildURL({ slug, file: fileName }),
-            })
+            artifactMetaStr
           );
+          await fs.mkdir(`${indexDir}artifacts-by-id/${org}`, {
+            recursive: true,
+          });
+          await fs.writeFile(
+            `${indexDir}artifacts-by-id/${id}@${tag}.json`,
+            artifactMetaStr
+          );
+          if (isLatest) {
+            await fs.writeFile(
+              `${indexDir}artifacts-by-id/${id}@latest.json`,
+              artifactMetaStr
+            );
+          }
         }
       }
     } catch (e) {

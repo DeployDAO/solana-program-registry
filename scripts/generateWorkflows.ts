@@ -1,5 +1,6 @@
 import * as fs from "fs/promises";
-import { parse } from "yaml";
+
+import { loadPrograms } from "../src/config";
 
 const makeWorkflowYaml = ({
   repo,
@@ -104,11 +105,7 @@ jobs:
 };
 
 const generateWorkflows = async () => {
-  const programsListRaw = await fs.readFile(`${__dirname}/../programs.yml`);
-  const programsList = parse(programsListRaw.toString()) as Record<
-    string,
-    string[]
-  >;
+  const programsList = await loadPrograms();
 
   const allTags = Object.entries(programsList).flatMap(([repo, tags]) =>
     tags.map((tag) => [repo, tag] as const)
