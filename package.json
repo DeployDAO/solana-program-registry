@@ -10,8 +10,8 @@
   "devDependencies": {
     "@project-serum/anchor": "^0.20.1",
     "@rushstack/eslint-patch": "^1.1.0",
-    "@saberhq/eslint-config": "^1.12.32",
-    "@saberhq/tsconfig": "^1.12.32",
+    "@saberhq/eslint-config": "^1.12.34",
+    "@saberhq/tsconfig": "^1.12.34",
     "@types/eslint": "^8.4.0",
     "@types/lodash": "^4.14.178",
     "@types/node": "^17.0.10",
