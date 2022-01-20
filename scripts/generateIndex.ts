@@ -5,6 +5,7 @@ import * as fs from "fs/promises";
 import { basename } from "path";
 import invariant from "tiny-invariant";
 
+import type { Build } from "../src/config";
 import {
   describeBuild,
   loadOrganizations,
@@ -108,6 +109,12 @@ const generateIndex = async () => {
 
   await fs.writeFile(`${indexDir}programs.json`, JSON.stringify(programs));
 
+  const builds: {
+    build: Build;
+    addresses: Record<string, string>;
+    checksums: Record<string, string>;
+  }[] = [];
+
   const allTags = Object.entries(programsList).flatMap(([repo, tags]) =>
     tags.map((tag) => [repo, tag] as const)
   );
@@ -121,7 +128,14 @@ const generateIndex = async () => {
     const { slug, org, source } = build;
 
     try {
+      const addresses = await fetchBuildAddresses(build);
       const checksums = await fetchBuildChecksums(build);
+      builds.push({
+        build,
+        addresses,
+        checksums,
+      });
+
       for (const [checksum, fileName] of Object.entries(checksums)) {
         console.log(`processing ${checksum}`);
         if (fileName.endsWith(".so")) {
@@ -139,6 +153,7 @@ const generateIndex = async () => {
             }),
             checksum,
           };
+
           const artifactMetaStr = JSON.stringify(artifactMeta);
           await fs.writeFile(
             `${indexDir}artifacts/${checksum}.json`,
@@ -166,6 +181,7 @@ const generateIndex = async () => {
       console.warn(`Could not find checksums for ${repo} ${tag}`);
     }
   }
+  await fs.writeFile(`${indexDir}builds.json`, JSON.stringify(builds));
 };
 
 generateIndex().catch((err) => {
