@@ -27,6 +27,8 @@
 "arrowprotocol/arrow":
   - v0.1.8
   - v0.1.9
+"saber-hq/snapshots":
+  - v0.1.0
 "saber-hq/merkle-distributor":
   - v0.2.5
 "saber-hq/stable-swap":
