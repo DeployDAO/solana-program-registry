@@ -27,12 +27,7 @@ jobs:
     name: Release verifiable binaries
     steps:
       - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v14
-        with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
-          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
-          extra_nix_config: |
-            experimental-features = nix-command flakes
+      - uses: cachix/install-nix-action@v16
       - name: Setup Cachix
         uses: cachix/cachix-action@v10
         with:
@@ -82,12 +77,15 @@ jobs:
 
           cat artifacts/checksums.txt | jq -R '. | split("  ") | [{key:.[0],value:.[1]}] | from_entries' | jq -s add > artifacts/checksums.json
 
+          echo "anchorVersion: \\"$(nix shell .#anchor-${anchorVersion} --command anchor --version)\\"" >> artifacts/build-info.yml
+          echo "createdAt: \\"$(date +%s)\\"" >> artifacts/build-info.yml
+          echo 'repo: "${repo}"' >> artifacts/build-info.yml
+          echo 'tag: "${tag}"' >> artifacts/build-info.yml
+          echo 'slug: "${slug}"' >> artifacts/build-info.yml
+          nix shell .#devShell --command bash -c 'cat build-info.yml | yq > build-info.json'
+
           echo '---' >> artifacts/README.md
-          echo "anchorVersion: \\"$(nix shell .#anchor-${anchorVersion} --command anchor --version)\\"" >> artifacts/README.md
-          echo "createdAt: \\"$(date)\\"" >> artifacts/README.md
-          echo 'repo: "${repo}"' >> artifacts/README.md
-          echo 'tag: "${tag}"' >> artifacts/README.md
-          echo 'slug: "${slug}"' >> artifacts/README.md
+          cat artifacts/build-info.yml >> artifacts/README.md
           echo '---' >> artifacts/README.md
           echo '# ${repo} ${tag}' >> artifacts/README.md
           echo '## Checksums' >> artifacts/README.md
