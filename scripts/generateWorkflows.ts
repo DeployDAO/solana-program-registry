@@ -78,7 +78,7 @@ jobs:
           cat artifacts/checksums.txt | jq -R '. | split("  ") | [{key:.[0],value:.[1]}] | from_entries' | jq -s add > artifacts/checksums.json
 
           echo "anchorVersion: \\"$(nix shell .#anchor-${anchorVersion} --command anchor --version)\\"" >> artifacts/build-info.yml
-          echo "createdAt: \\"$(date +%s)\\"" >> artifacts/build-info.yml
+          echo "createdAt: \\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\\"" >> artifacts/build-info.yml
           echo 'repo: "${repo}"' >> artifacts/build-info.yml
           echo 'tag: "${tag}"' >> artifacts/build-info.yml
           echo 'slug: "${slug}"' >> artifacts/build-info.yml
