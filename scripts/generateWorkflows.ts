@@ -67,8 +67,16 @@ jobs:
           mv $(cat dirname)/target/idl/ artifacts/idl/
           mv $(cat dirname)/addresses.json artifacts/addresses.json
 
+          # Create versions of each binary without trailing NULL bytes
+          # This makes it easier to verify checksums on-chain
+          mkdir -p artifacts/verifiable-trimmed/
+          for PROGRAM in $(ls artifacts/verifiable/*.so); do
+            sed 's/\\x00*$//' $PROGRAM > artifacts/verifiable-trimmed/$(basename $PROGRAM)
+          done
+
           sha256sum release.tar.gz >> artifacts/checksums.txt
           sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
+          sha256sum artifacts/verifiable-trimmed/* >> artifacts/checksums.txt
 
           # IDLs might not be generated
           if compgen -G "artifacts/idl/*" > /dev/null; then
