@@ -49,7 +49,6 @@ const generateIndex = async () => {
     repo: string;
     tag: string;
     address: string;
-    shasum: string;
   }[] = [];
 
   for (const [repo, tag] of lastTags) {
@@ -102,7 +101,6 @@ const generateIndex = async () => {
           repo,
           tag,
           address,
-          shasum,
         });
       }
     } catch (e) {
