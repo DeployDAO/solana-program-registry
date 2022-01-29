@@ -74,15 +74,21 @@ jobs:
             sed 's/\\x00*$//' $PROGRAM > artifacts/verifiable-trimmed/$(basename $PROGRAM)
           done
 
+
           sha256sum release.tar.gz >> artifacts/checksums.txt
           sha256sum artifacts/verifiable/* >> artifacts/checksums.txt
           sha256sum artifacts/verifiable-trimmed/* >> artifacts/checksums.txt
+
+          du -b release.tar.gz >> artifacts/sizes.txt
+          du -b artifacts/verifiable/*.so >> artifacts/sizes.txt
+          du -b artifacts/verifiable-trimmed/*.so >> artifacts/sizes.txt
 
           # IDLs might not be generated
           if compgen -G "artifacts/idl/*" > /dev/null; then
             sha256sum artifacts/idl/* >> artifacts/checksums.txt
           fi
 
+          cat artifacts/sizes.txt | jq -R '. | split("\\t") | [{key:.[1],value:.[0]}] | from_entries' | jq -s add > artifacts/sizes.json
           cat artifacts/checksums.txt | jq -R '. | split("  ") | [{key:.[0],value:.[1]}] | from_entries' | jq -s add > artifacts/checksums.json
 
           echo "anchorVersion: \\"$(nix shell .#anchor-${anchorVersion} --command anchor --version)\\"" >> artifacts/build-info.yml
