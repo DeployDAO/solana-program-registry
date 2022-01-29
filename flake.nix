@@ -24,6 +24,7 @@
         packages.anchor-0_17_0 = pkgs.anchor-0_17_0;
         packages.anchor-0_18_0 = pkgs.anchor-0_18_0;
         packages.anchor-0_19_0 = pkgs.anchor-0_19_0;
+        packages.anchor-0_20_1 = pkgs.anchor-0_20_1;
         packages.devShell = devShell;
 
         devShell = pkgs.mkShell { buildInputs = [ devShell ]; };
