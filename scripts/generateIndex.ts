@@ -12,7 +12,13 @@ import {
   loadPrograms,
   makeProgramLabel,
 } from "../src/config";
-import { fetchBuildAddresses, fetchBuildChecksums } from "../src/fetchers";
+import type { BuildInfo } from "../src/fetchers";
+import {
+  fetchBuildAddresses,
+  fetchBuildChecksums,
+  fetchBuildInfo,
+  fetchSizes,
+} from "../src/fetchers";
 
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
@@ -113,6 +119,8 @@ const generateIndex = async () => {
     build: Build;
     addresses: Record<string, string>;
     checksums: Record<string, string>;
+    info: BuildInfo | null;
+    sizes: Record<string, string> | null;
   }[] = [];
 
   const allTags = Object.entries(programsList).flatMap(([repo, tags]) =>
@@ -130,10 +138,14 @@ const generateIndex = async () => {
     try {
       const addresses = await fetchBuildAddresses(build);
       const checksums = await fetchBuildChecksums(build);
+      const info = await fetchBuildInfo(build);
+      const sizes = await fetchSizes(build);
       builds.push({
         build,
         addresses,
         checksums,
+        info,
+        sizes,
       });
 
       for (const [checksum, fileName] of Object.entries(checksums)) {
