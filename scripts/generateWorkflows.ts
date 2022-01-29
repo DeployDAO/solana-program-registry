@@ -96,7 +96,7 @@ jobs:
           echo 'repo: "${repo}"' >> artifacts/build-info.yml
           echo 'tag: "${tag}"' >> artifacts/build-info.yml
           echo 'slug: "${slug}"' >> artifacts/build-info.yml
-          nix shell .#devShell --command bash -c 'cat build-info.yml | yj' > artifacts/build-info.json
+          nix shell .#devShell --command bash -c 'cat artifacts/build-info.yml | yj' > artifacts/build-info.json
 
           echo '---' >> artifacts/README.md
           cat artifacts/build-info.yml >> artifacts/README.md
