@@ -71,7 +71,7 @@ jobs:
           # This makes it easier to verify checksums on-chain
           mkdir -p artifacts/verifiable-trimmed/
           for PROGRAM in $(ls artifacts/verifiable/*.so); do
-            sed 's/\\x00*$//' $PROGRAM > artifacts/verifiable-trimmed/$(basename $PROGRAM)
+            sed '$ s/\\x00*$//' $PROGRAM > artifacts/verifiable-trimmed/$(basename $PROGRAM)
           done
 
 
