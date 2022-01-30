@@ -2,6 +2,8 @@ import * as fs from "fs/promises";
 import { mapValues, startCase } from "lodash";
 import { parse } from "yaml";
 
+import type { Author, Build } from "./types";
+
 export const loadPrograms = async (): Promise<
   Record<string, readonly string[]>
 > => {
@@ -26,17 +28,6 @@ export const loadOrganizations = async (): Promise<
   return mapValues(orgsList, (org, github) => ({ ...org, github }));
 };
 
-/**
- * Corresponds to a verified program build.
- */
-export interface Build {
-  slug: string;
-  org: string;
-  repoName: string;
-  source: string;
-  tag: string;
-}
-
 export const describeBuild = (repo: string, tag: string): Build => {
   const slug = `${repo.replace("/", "__")}-${tag}`;
   const [org, repoName] = repo.split("/");
@@ -52,8 +43,5 @@ export const describeBuild = (repo: string, tag: string): Build => {
   };
 };
 
-export const makeProgramLabel = (
-  orgsList: Record<string, Organization>,
-  github: string,
-  programName: string
-) => `${orgsList[github]?.name ?? `@${github}`} - ${startCase(programName)}`;
+export const makeProgramLabel = (author: Author, programName: string) =>
+  `${author.info?.name ?? `@${author.name}`} - ${startCase(programName)}`;

@@ -2,23 +2,31 @@ import type { Idl } from "@project-serum/anchor";
 import type { AxiosError } from "axios";
 import axios from "axios";
 import * as fs from "fs/promises";
+import { groupBy, mapValues, uniq } from "lodash";
 import { basename } from "path";
+import semver from "semver";
 import invariant from "tiny-invariant";
 
-import type { Build } from "../src/config";
 import {
   describeBuild,
   loadOrganizations,
   loadPrograms,
   makeProgramLabel,
 } from "../src/config";
-import type { BuildInfo } from "../src/fetchers";
 import {
   fetchBuildAddresses,
   fetchBuildChecksums,
   fetchBuildInfo,
   fetchSizes,
 } from "../src/fetchers";
+import type {
+  ArtifactInfo,
+  Author,
+  BuildDetails,
+  ProgramDetails,
+  ProgramInfo,
+  VerifiableProgramRelease,
+} from "../src/types";
 
 const buildURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
@@ -26,164 +34,258 @@ const buildURL = ({ slug, file }: { slug: string; file: string }) =>
 const buildDownloadURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://github.com/DeployDAO/verified-program-artifacts/raw/verify-${slug}/${file}`;
 
+/**
+ * Generates a {@link VerifiableProgramRelease}.
+ * @returns
+ */
+const generateRelease = ({
+  artifacts,
+  artifact,
+  build,
+}: {
+  artifacts: ArtifactInfo[];
+  artifact: ArtifactInfo;
+  build: BuildDetails;
+}): VerifiableProgramRelease => {
+  const programName = basename(artifact.path).slice(0, -".so".length);
+  const programLabel = makeProgramLabel(build.author, programName);
+  const scopedProgramName = `@${build.author.name}/${programName}`;
+  const releaseID = `${scopedProgramName}@${build.build.tag}`;
+  const address = build.addresses[programName];
+  if (!address) {
+    throw new Error(`address for ${programName} not found`);
+  }
+
+  const trimmedArtifact = artifacts.find(
+    (artifact) =>
+      artifact.path === `artifacts/verifiable-trimmed/${programName}.so`
+  );
+  if (!trimmedArtifact) {
+    throw new Error(`missing trimmed artifact`);
+  }
+
+  const idlArtifact = artifacts.find(
+    (artifact) => artifact.path === `artifacts/idl/${programName}.so`
+  );
+
+  const programInfo: ProgramInfo = {
+    id: `@${build.build.org}/${build.build.repoName}/${programName}`,
+    name: programName,
+    label: programLabel,
+    address,
+    author: build.author,
+    github: {
+      organization: build.build.org,
+      repo: build.build.repoName,
+    },
+  };
+
+  const release: VerifiableProgramRelease = {
+    id: releaseID,
+    program: programInfo,
+    artifact,
+    trimmedArtifact,
+    idl: idlArtifact ?? null,
+    build: build,
+  };
+
+  return release;
+};
+
+const writeReleaseArtifacts = async ({
+  release,
+  isLatest,
+  indexDir,
+}: {
+  indexDir: string;
+  release: VerifiableProgramRelease;
+  isLatest: boolean;
+}) => {
+  const releaseJSON = JSON.stringify(release);
+  await fs.writeFile(
+    `${indexDir}releases/by-trimmed-checksum/${release.trimmedArtifact.checksum}.json`,
+    releaseJSON
+  );
+  await fs.writeFile(
+    `${indexDir}releases/by-checksum/${release.artifact.checksum}.json`,
+    releaseJSON
+  );
+  const scopedName = `@${release.program.author.name}/${release.program.name}`;
+
+  // scope
+  await fs.mkdir(
+    `${indexDir}releases/by-name/@${release.program.author.name}`,
+    {
+      recursive: true,
+    }
+  );
+
+  await fs.writeFile(
+    `${indexDir}releases/by-name/${release.id}.json`,
+    releaseJSON
+  );
+  if (isLatest) {
+    await fs.writeFile(
+      `${indexDir}releases/by-name/${scopedName}@latest.json`,
+      releaseJSON
+    );
+  }
+  await fetchAndWriteIDL({ indexDir, release, isLatest });
+};
+
+const fetchAndWriteIDL = async ({
+  indexDir,
+  release,
+  isLatest,
+}: {
+  indexDir: string;
+  release: VerifiableProgramRelease;
+  isLatest: boolean;
+}) => {
+  try {
+    const { data: idl } = await axios.get<Idl>(
+      buildURL({
+        slug: release.build.build.slug,
+        file: `idl/${release.program.name}.json`,
+      })
+    );
+    await fs.writeFile(
+      `${indexDir}releases/by-name/${release.id}.idl.json`,
+      JSON.stringify(idl)
+    );
+    if (isLatest) {
+      await fs.writeFile(
+        `${indexDir}idls/${release.program.address}.json`,
+        JSON.stringify(idl)
+      );
+    }
+  } catch (e) {
+    if ((e as AxiosError).response?.status !== 404) {
+      throw e;
+    }
+    console.warn(
+      `Could not find idl for ${release.build.build.repoName} ${release.build.build.tag}`
+    );
+  }
+};
+
 const generateIndex = async () => {
   const programsList = await loadPrograms();
   const orgsList = await loadOrganizations();
 
   const indexDir = `${__dirname}/../index/`;
   await fs.mkdir(indexDir, { recursive: true });
+
+  // IDLs and program info
   await fs.mkdir(`${indexDir}idls/`, { recursive: true });
   await fs.mkdir(`${indexDir}programs/`, { recursive: true });
-  await fs.mkdir(`${indexDir}artifacts/`, { recursive: true });
-  await fs.mkdir(`${indexDir}artifacts-by-id/`, { recursive: true });
 
-  const lastTags = Object.entries(programsList).map(([repo, tags]) => {
-    const lastTag = tags[tags.length - 1];
-    invariant(lastTag, `no tags for ${repo}`);
-    return [repo, lastTag] as const;
+  // releases
+  await fs.mkdir(`${indexDir}releases/by-checksum/`, {
+    recursive: true,
+  });
+  await fs.mkdir(`${indexDir}releases/by-trimmed-checksum/`, {
+    recursive: true,
+  });
+  await fs.mkdir(`${indexDir}releases/by-name/`, {
+    recursive: true,
   });
 
-  const programs: {
-    label: string;
-    name: string;
-    repo: string;
-    tag: string;
-    address: string;
-  }[] = [];
-
-  for (const [repo, tag] of lastTags) {
-    const build = describeBuild(repo, tag);
-    const { slug, org } = build;
-    try {
-      const addresses = await fetchBuildAddresses(build);
-      const checksums = await fetchBuildChecksums(build);
-
-      for (const [programName, address] of Object.entries(addresses)) {
-        let theIdl: Idl | null = null;
-        try {
-          const { data: idl } = await axios.get<Idl>(
-            buildURL({ slug, file: `idl/${programName}.json` })
-          );
-          await fs.writeFile(
-            `${indexDir}idls/${address}.json`,
-            JSON.stringify(idl)
-          );
-          theIdl = idl;
-        } catch (e) {
-          if ((e as AxiosError).response?.status !== 404) {
-            throw e;
-          }
-          console.warn(`Could not find idl for ${repo} ${tag}`);
-        }
-
-        const shasum = Object.entries(checksums).find(
-          ([_, fileName]) =>
-            fileName === `artifacts/verifiable/${programName}.so`
-        )?.[0];
-        if (!shasum) {
-          throw new Error(`shasum not found for program: ${repo} ${tag}`);
-        }
-
-        const tagsOfRepo = programsList[repo];
-        await fs.writeFile(
-          `${indexDir}programs/${address}.json`,
-          JSON.stringify({
-            label: makeProgramLabel(orgsList, org, programName),
-            latest: { ...build, shasum },
-            releases: tagsOfRepo?.map((tag) => describeBuild(repo, tag)) ?? [],
-            hasIDL: !!theIdl,
-          })
-        );
-
-        programs.push({
-          label: makeProgramLabel(orgsList, org, programName),
-          name: programName,
-          repo,
-          tag,
-          address,
-        });
-      }
-    } catch (e) {
-      if ((e as AxiosError).response?.status !== 404) {
-        throw e;
-      }
-      console.warn(`Could not find idl for ${repo} ${tag}`);
-    }
-  }
-
-  await fs.writeFile(`${indexDir}programs.json`, JSON.stringify(programs));
-
-  const builds: {
-    build: Build;
-    addresses: Record<string, string>;
-    checksums: Record<string, string>;
-    info: BuildInfo | null;
-    sizes: Record<string, string> | null;
-  }[] = [];
+  const builds: BuildDetails[] = [];
+  const programs: Record<string, ProgramInfo> = {};
+  const artifactsByChecksum: Record<string, ArtifactInfo> = {};
+  const allReleases: VerifiableProgramRelease[] = [];
 
   const allTags = Object.entries(programsList).flatMap(([repo, tags]) =>
     tags.map((tag) => [repo, tag] as const)
   );
   for (const [repo, tag] of allTags) {
     const tagsOfRepo = programsList[repo];
-    const isLatest = !!(
-      tagsOfRepo && tagsOfRepo[tagsOfRepo.length - 1] === tag
-    );
+
+    // sort tags in descending order
+    const sortedTags =
+      tagsOfRepo?.slice().sort((a, b) => {
+        if (semver.gt(a, b)) {
+          return -1;
+        }
+        return 1;
+      }) ?? [];
+
+    const isLatest = !!(sortedTags[0] === tag);
 
     const build = describeBuild(repo, tag);
-    const { slug, org, source } = build;
+    const { slug, org } = build;
 
     try {
       const addresses = await fetchBuildAddresses(build);
       const checksums = await fetchBuildChecksums(build);
       const info = await fetchBuildInfo(build);
-      const sizes = await fetchSizes(build);
-      builds.push({
+      const sizes = mapValues(await fetchSizes(build), (size) =>
+        parseInt(size)
+      );
+
+      const artifacts = Object.entries(checksums).map(
+        ([checksum, artifactPath]): ArtifactInfo => {
+          const sizeStr = sizes?.[artifactPath] ?? null;
+          return {
+            path: artifactPath,
+            checksum,
+            size: sizeStr,
+            downloadURL: buildDownloadURL({
+              slug,
+              file: artifactPath,
+            }),
+          };
+        }
+      );
+
+      const verifiedOrganizationInfo = orgsList[org] ?? null;
+      const author: Author = {
+        name: org,
+        info: verifiedOrganizationInfo,
+      };
+
+      const details: BuildDetails = {
         build,
         addresses,
-        checksums,
         info,
-        sizes,
+        artifacts,
+        workspaceURL: `https://github.com/DeployDAO/verified-program-artifacts/tree/verify-${build.slug}`,
+        author,
+      };
+      builds.push(details);
+
+      const programReleases: VerifiableProgramRelease[] = artifacts
+        .filter(
+          (artifact) =>
+            artifact.path.includes("artifacts/verifiable/") &&
+            artifact.path.endsWith(".so")
+        )
+        .map((artifact) => {
+          const release = generateRelease({
+            artifacts,
+            artifact,
+            build: details,
+          });
+          if (!(release.program.id in programs)) {
+            programs[release.program.id] = release.program;
+          }
+          return release;
+        });
+
+      artifacts.forEach((artifact) => {
+        if (!(artifact.checksum in artifacts)) {
+          artifactsByChecksum[artifact.checksum] = artifact;
+        }
       });
 
-      for (const [checksum, fileName] of Object.entries(checksums)) {
-        console.log(`processing ${checksum}`);
-        if (fileName.endsWith(".so")) {
-          const programName = basename(fileName).slice(0, -".so".length);
-          const programLabel = makeProgramLabel(orgsList, org, programName);
-          const id = `${org}/${programName}`;
-          const artifactMeta = {
-            id,
-            tag,
-            name: `${programLabel} ${tag}`,
-            source,
-            url: buildDownloadURL({
-              slug,
-              file: `${fileName.slice("artifacts/".length)}`,
-            }),
-            checksum,
-          };
+      await Promise.all(
+        programReleases.map(async (release) => {
+          await writeReleaseArtifacts({ release, isLatest, indexDir });
+        })
+      );
 
-          const artifactMetaStr = JSON.stringify(artifactMeta);
-          await fs.writeFile(
-            `${indexDir}artifacts/${checksum}.json`,
-            artifactMetaStr
-          );
-          await fs.mkdir(`${indexDir}artifacts-by-id/${org}`, {
-            recursive: true,
-          });
-          await fs.writeFile(
-            `${indexDir}artifacts-by-id/${id}@${tag}.json`,
-            artifactMetaStr
-          );
-          if (isLatest) {
-            await fs.writeFile(
-              `${indexDir}artifacts-by-id/${id}@latest.json`,
-              artifactMetaStr
-            );
-          }
-        }
-      }
+      allReleases.push(...programReleases);
     } catch (e) {
       if ((e as AxiosError).response?.status !== 404) {
         throw e;
@@ -191,7 +293,54 @@ const generateIndex = async () => {
       console.warn(`Could not find checksums for ${repo} ${tag}`);
     }
   }
+
+  const programDetails = mapValues(
+    groupBy(allReleases, (release) => release.program.id),
+    (releases, programID): ProgramDetails => {
+      const program = programs[programID];
+      invariant(program);
+      return {
+        program,
+        releases,
+      };
+    }
+  );
+
+  await Promise.all(
+    Object.values(programDetails).map(async (programDetail) => {
+      await fs.writeFile(
+        `${indexDir}programs/${programDetail.program.address}.json`,
+        JSON.stringify(programDetail)
+      );
+    })
+  );
+
+  const orgsCount = uniq(builds.map((b) => b.build.org)).length;
+  const reposCount = uniq(
+    builds.map((b) => `${b.build.org}/${b.build.repoName}`)
+  ).length;
+
+  await fs.writeFile(
+    `${indexDir}meta.json`,
+    JSON.stringify({
+      lastUpdated: new Date().toISOString(),
+      counts: {
+        artifacts: Object.values(artifactsByChecksum).length,
+        orgs: orgsCount,
+        repos: reposCount,
+        programs: Object.values(programs).length,
+      },
+    })
+  );
+  await fs.writeFile(
+    `${indexDir}artifacts.json`,
+    JSON.stringify(Object.values(artifactsByChecksum))
+  );
   await fs.writeFile(`${indexDir}builds.json`, JSON.stringify(builds));
+  await fs.writeFile(
+    `${indexDir}programs.json`,
+    JSON.stringify(Object.values(programs))
+  );
 };
 
 generateIndex().catch((err) => {

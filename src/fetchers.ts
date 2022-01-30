@@ -1,9 +1,15 @@
 import type { AxiosError } from "axios";
 import axios from "axios";
 
-import type { Build } from "./config";
+import type { Build, BuildInfo } from "./types";
 
-const buildRawArtifactURL = ({ slug, file }: { slug: string; file: string }) =>
+export const buildRawArtifactURL = ({
+  slug,
+  file,
+}: {
+  slug: string;
+  file: string;
+}) =>
   `https://raw.githubusercontent.com/DeployDAO/verified-program-artifacts/verify-${slug}/${file}`;
 
 export const fetchBuildAddresses = async (
@@ -23,14 +29,6 @@ export const fetchBuildChecksums = async (
   );
   return addresses;
 };
-
-export interface BuildInfo {
-  anchorVersion: string;
-  createdAt: string;
-  repo: string;
-  tag: string;
-  slug: string;
-}
 
 export const fetchBuildInfo = async (
   build: Build
