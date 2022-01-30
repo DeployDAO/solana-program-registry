@@ -236,7 +236,9 @@ const generateIndex = async () => {
       const artifacts = Object.entries(checksums).map(
         ([checksum, artifactPath]): ArtifactInfo => {
           const sizeStr = sizes?.[artifactPath] ?? null;
-          const trimmedPath = artifactPath.slice("artifacts/".length);
+          const trimmedPath = artifactPath.startsWith("artifacts/")
+            ? artifactPath.slice("artifacts/".length)
+            : artifactPath;
           return {
             path: artifactPath,
             checksum,
