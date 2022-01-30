@@ -42,6 +42,15 @@ export interface ArtifactInfo {
   downloadURL: string;
 }
 
+/**
+ * A verified organization in `organizations.yml`.
+ */
+export interface VerifiedOrganization {
+  name: string;
+  github: string;
+  website?: string;
+}
+
 export interface Author {
   /**
    * GitHub username/organization name.
@@ -50,10 +59,7 @@ export interface Author {
   /**
    * Verified info from `organizations.yml`.
    */
-  info: {
-    name: string;
-    website?: string;
-  } | null;
+  info: VerifiedOrganization | null;
 }
 
 /**

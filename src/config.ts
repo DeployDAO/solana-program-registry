@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import { mapValues, startCase } from "lodash";
 import { parse } from "yaml";
 
-import type { Author, Build } from "./types";
+import type { Author, Build, VerifiedOrganization } from "./types";
 
 export const loadPrograms = async (): Promise<
   Record<string, readonly string[]>
@@ -11,11 +11,7 @@ export const loadPrograms = async (): Promise<
   return parse(programsListRaw.toString()) as Record<string, string[]>;
 };
 
-export interface Organization {
-  name: string;
-  github: string;
-  website?: string;
-}
+export type Organization = VerifiedOrganization;
 
 export const loadOrganizations = async (): Promise<
   Record<string, Organization>
