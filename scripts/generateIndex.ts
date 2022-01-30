@@ -34,6 +34,15 @@ const buildURL = ({ slug, file }: { slug: string; file: string }) =>
 const buildDownloadURL = ({ slug, file }: { slug: string; file: string }) =>
   `https://github.com/DeployDAO/verified-program-artifacts/raw/verify-${slug}/${file}`;
 
+const buildBinaryDownloadURL = ({
+  slug,
+  file,
+}: {
+  slug: string;
+  file: string;
+}) =>
+  `https://github.com/DeployDAO/verified-program-artifacts/blob/verify-${slug}/${file}?raw=true`;
+
 /**
  * Generates a {@link VerifiableProgramRelease}.
  * @returns
@@ -231,10 +240,12 @@ const generateIndex = async () => {
             path: artifactPath,
             checksum,
             size: sizeStr,
-            downloadURL: buildDownloadURL({
-              slug,
-              file: artifactPath,
-            }),
+            downloadURL: artifactPath.endsWith(".so")
+              ? buildBinaryDownloadURL({
+                  slug,
+                  file: artifactPath.slice("artifacts/".length),
+                })
+              : buildDownloadURL({ slug, file: artifactPath }),
           };
         }
       );
