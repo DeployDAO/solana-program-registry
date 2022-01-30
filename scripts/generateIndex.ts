@@ -236,6 +236,7 @@ const generateIndex = async () => {
       const artifacts = Object.entries(checksums).map(
         ([checksum, artifactPath]): ArtifactInfo => {
           const sizeStr = sizes?.[artifactPath] ?? null;
+          const trimmedPath = artifactPath.slice("artifacts/".length);
           return {
             path: artifactPath,
             checksum,
@@ -243,9 +244,9 @@ const generateIndex = async () => {
             downloadURL: artifactPath.endsWith(".so")
               ? buildBinaryDownloadURL({
                   slug,
-                  file: artifactPath.slice("artifacts/".length),
+                  file: trimmedPath,
                 })
-              : buildDownloadURL({ slug, file: artifactPath }),
+              : buildDownloadURL({ slug, file: trimmedPath }),
           };
         }
       );
