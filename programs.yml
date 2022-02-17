@@ -51,3 +51,5 @@
 "VenkoApp/venko":
   - v0.1.0
   - v0.1.1
+"cardinal-labs/cardinal-token-manager":
+  - v0.1.8
