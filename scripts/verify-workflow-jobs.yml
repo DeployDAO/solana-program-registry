@@ -72,7 +72,7 @@ jobs:
           echo "anchorVersion: \\"$(nix shell .#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor --version)\\"" >> artifacts/build-info.yml
           echo "createdAt: \\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\\"" >> artifacts/build-info.yml
           echo 'repo: "${{ env.PROGRAM_GITHUB_REPO }}"' >> artifacts/build-info.yml
-          echo 'tag: "${{ env.PROGRAM_GIT_TAG} }"' >> artifacts/build-info.yml
+          echo 'tag: "${{ env.PROGRAM_GIT_TAG }}"' >> artifacts/build-info.yml
           echo 'slug: "${{ env.PROGRAM_SLUG }}"' >> artifacts/build-info.yml
           nix shell .#devShell --command bash -c 'cat artifacts/build-info.yml | yj' > artifacts/build-info.json
 
