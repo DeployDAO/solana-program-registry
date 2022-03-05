@@ -25,6 +25,8 @@ jobs:
             ${{ runner.os }}-modules-
 
       - run: yarn install
+      - run: yarn typecheck
+      - run: yarn lint
       - run: yarn generate-workflows
       - run: cp *.nix out/
       - run: cp flake.lock out/

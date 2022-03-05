@@ -26,7 +26,7 @@
     "lint-staged": "^12.3.5",
     "prettier": "^2.5.1",
     "ts-node": "^10.6.0",
-    "typescript": "^4.5.5"
+    "typescript": "^4.6.2"
   },
   "dependencies": {
     "lodash": "^4.17.21",
@@ -36,6 +36,7 @@
     "yaml": "^1.10.2"
   },
   "scripts": {
+    "typecheck": "tsc",
     "lint": "eslint . --cache",
     "generate-workflows": "ts-node scripts/generateWorkflows.ts",
     "generate-index": "ts-node scripts/generateIndex.ts",
