@@ -6,7 +6,7 @@ const makeWorkflowYaml = ({
   repo,
   tag,
   slug,
-  anchorVersion = "0_19_0",
+  anchorVersion = "0_22_0",
 }: {
   repo: string;
   tag: string;
