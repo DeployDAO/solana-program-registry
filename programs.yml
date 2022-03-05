@@ -23,9 +23,16 @@
 "CrateProtocol/crate":
   - v0.4.0
   - v0.4.1
+
+"TribecaHQ/permalock":
+  - v0.1.4
+"TribecaHQ/save":
+  - v0.1.2
 "TribecaHQ/tribeca":
   - v0.3.0
   - v0.3.2
+  - v0.5.4
+
 "cashioapp/cashio":
   - v0.1.4
 "arrowprotocol/arrow":
