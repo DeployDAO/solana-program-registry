@@ -77,7 +77,7 @@ const generateWorkflows = async () => {
     )
   ) as object;
 
-  const outDir = `${__dirname}/../out/`;
+  const outDir = `${__dirname}/../out`;
   await fs.mkdir(outDir, { recursive: true });
   const workflowsDir = `${outDir}/.github/workflows/`;
   await fs.mkdir(workflowsDir, { recursive: true });
@@ -90,11 +90,16 @@ const generateWorkflows = async () => {
     const manifestJSONPath = `${outDir}/manifests/${slug}.json`;
     let manifest: AnchorManifest;
 
+    let manifestJSONRaw: string | null = null;
+    try {
+      manifestJSONRaw = (await fs.readFile(manifestJSONPath)).toString("utf-8");
+    } catch (e) {
+      // skip
+    }
+
     // don't fetch the manifest multiple times
-    if ((await fs.stat(manifestJSONPath)).isFile()) {
-      manifest = JSON.parse(
-        (await fs.readFile(manifestJSONPath)).toString()
-      ) as AnchorManifest;
+    if (manifestJSONRaw) {
+      manifest = JSON.parse(manifestJSONRaw.toString()) as AnchorManifest;
     } else {
       const anchorTomlURL = `https://cdn.jsdelivr.net/gh/${repo}@${tag}/Anchor.toml`;
 
