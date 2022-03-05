@@ -172,3 +172,16 @@ export interface ProgramDetails {
    */
   releases: VerifiableProgramRelease[];
 }
+
+/**
+ * An `Anchor.toml`.
+ */
+export interface AnchorManifest {
+  anchor_version?: string;
+  solana_version?: string;
+  programs?: {
+    [network: string]: {
+      [programName: string]: string;
+    };
+  };
+}
