@@ -48,14 +48,12 @@ const makeWorkflowYaml = ({
         paths: [`.github/workflows/verify-${slug}.yml`],
       },
     },
-    defaults: {
-      env: {
-        ANCHOR_CLI_VERSION: anchorPackage,
-        PROGRAM_GITHUB_REPO: repo,
-        PROGRAM_GIT_TAG: tag,
-        PROGRAM_SLUG: slug,
-        PROGRAM_TARBALL_URL: `https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz`,
-      },
+    env: {
+      ANCHOR_CLI_VERSION: anchorPackage,
+      PROGRAM_GITHUB_REPO: repo,
+      PROGRAM_GIT_TAG: tag,
+      PROGRAM_SLUG: slug,
+      PROGRAM_TARBALL_URL: `https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz`,
     },
   };
   return yaml.stringify({
