@@ -15,27 +15,23 @@ jobs:
           curl -L ${{ env.PROGRAM_TARBALL_URL }} > release.tar.gz
       - name: Extract sources
         run: echo $(tar xzvf release.tar.gz | head -1 | cut -f1 -d"/") > dirname
-      - name: Login to Anchor
-        run: nix shell ./#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor login ${{ secrets.ANCHOR_AUTH_TOKEN }}
       - name: Extract addresses
         run: |
           cd $(cat dirname)
-          ls
-          nix shell ../#devShell --command bash -c 'cat Anchor.toml | yj -t | jq .programs.mainnet > addresses.json'
-          echo "Addresses"
-          cat addresses.json
+          echo '${{ env.MANIFEST_PROGRAM_ADDRESSES_JSON }}' > addresses.json
+      - name: Login to Anchor
+        run: nix shell ./#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor login ${{ secrets.ANCHOR_AUTH_TOKEN }}
       - name: Perform verifiable build
         run: |
           cd $(cat dirname)
           cat addresses.json | jq .
-          nix shell ../#devShell --command bash -c 'cat addresses.json | jq -r ". | keys | .[]" > programs.txt'
-          for PROGRAM in $(cat programs.txt); do
+          for PROGRAM in '${{ env.PROGRAM_NAMES }}'; do
             nix shell ../#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor build --verifiable --program-name "$PROGRAM"
           done
       - name: Publish build to Anchor Registry
         run: |
           cd $(cat dirname)
-          for PROGRAM in $(cat programs.txt); do
+          for PROGRAM in '${{ env.PROGRAM_NAMES }}'; do
             yes 'yes' | nix shell ../#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor publish "$PROGRAM" --provider.cluster mainnet
           done
       - name: Record program artifacts
