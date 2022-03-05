@@ -126,6 +126,12 @@ const generateWorkflows = async () => {
       await fs.writeFile(`${outDir}/manifests/${slug}.toml`, anchorToml);
     }
 
+    if (Object.keys(manifest.programs?.mainnet ?? {}).length === 0) {
+      throw new Error(
+        "There are no programs found in the Anchor manifest under the `programs.mainnet` key. Please update Anchor.toml."
+      );
+    }
+
     await fs.writeFile(
       `${workflowsDir}/verify-${slug}.yml`,
       makeWorkflowYaml({ manifest, repo, tag, slug, template })
