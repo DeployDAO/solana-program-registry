@@ -45,7 +45,7 @@ jobs:
           # This makes it easier to verify checksums on-chain
           mkdir -p artifacts/verifiable-trimmed/
           for PROGRAM in $(ls artifacts/verifiable/*.so); do
-            sed '$ s/\\x00*$//' $PROGRAM > artifacts/verifiable-trimmed/$(basename $PROGRAM)
+            sed '$ s/\x00*$//' $PROGRAM > artifacts/verifiable-trimmed/$(basename $PROGRAM)
           done
 
 
@@ -62,11 +62,11 @@ jobs:
             sha256sum artifacts/idl/* >> artifacts/checksums.txt
           fi
 
-          cat artifacts/sizes.txt | jq -R '. | split("\\t") | [{key:.[1],value:.[0]}] | from_entries' | jq -s add > artifacts/sizes.json
+          cat artifacts/sizes.txt | jq -R '. | split("\t") | [{key:.[1],value:.[0]}] | from_entries' | jq -s add > artifacts/sizes.json
           cat artifacts/checksums.txt | jq -R '. | split("  ") | [{key:.[0],value:.[1]}] | from_entries' | jq -s add > artifacts/checksums.json
 
-          echo "anchorVersion: \\"$(nix shell .#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor --version)\\"" >> artifacts/build-info.yml
-          echo "createdAt: \\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\\"" >> artifacts/build-info.yml
+          echo "anchorVersion: \"$(nix shell .#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor --version)\"" >> artifacts/build-info.yml
+          echo "createdAt: \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"" >> artifacts/build-info.yml
           echo 'repo: "${{ env.PROGRAM_GITHUB_REPO }}"' >> artifacts/build-info.yml
           echo 'tag: "${{ env.PROGRAM_GIT_TAG }}"' >> artifacts/build-info.yml
           echo 'slug: "${{ env.PROGRAM_SLUG }}"' >> artifacts/build-info.yml
