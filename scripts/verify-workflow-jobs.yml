@@ -25,13 +25,13 @@ jobs:
         run: |
           cd $(cat dirname)
           cat addresses.json | jq .
-          for PROGRAM in (${{ env.PROGRAM_NAMES }}); do
+          for PROGRAM in ${{ env.PROGRAM_NAMES }}; do
             nix shell ../#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor build --verifiable --program-name "$PROGRAM"
           done
       - name: Publish build to Anchor Registry
         run: |
           cd $(cat dirname)
-          for PROGRAM in (${{ env.PROGRAM_NAMES }}); do
+          for PROGRAM in ${{ env.PROGRAM_NAMES }}; do
             yes 'yes' | nix shell ../#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor publish "$PROGRAM" --provider.cluster mainnet
           done
       - name: Record program artifacts
