@@ -57,7 +57,7 @@ const makeWorkflowYaml = ({
       MAINNET_PROGRAM_ADDRESSES: JSON.stringify(
         manifest.programs?.mainnet ?? {}
       ),
-      PROGRAM_NAMES: Object.keys(manifest.programs?.mainnet ?? {}).join("\t"),
+      PROGRAM_NAMES: Object.keys(manifest.programs?.mainnet ?? {}).join(" "),
     },
   };
   return yaml.stringify({
