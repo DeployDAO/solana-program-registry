@@ -28,7 +28,7 @@ const makeWorkflowYaml = ({
   slug,
   manifest,
 }: {
-  template: object;
+  template: string;
   repo: string;
   tag: string;
   slug: string;
@@ -60,10 +60,8 @@ const makeWorkflowYaml = ({
       PROGRAM_NAMES: Object.keys(manifest.programs?.mainnet ?? {}).join(" "),
     },
   };
-  return yaml.stringify({
-    ...header,
-    ...template,
-  });
+  const headerStr = yaml.stringify(header);
+  return [headerStr, template].join("\n\n");
 };
 
 const generateWorkflows = async () => {
@@ -73,11 +71,9 @@ const generateWorkflows = async () => {
     tags.map((tag) => [repo, tag] as const)
   );
 
-  const template: object = yaml.parse(
-    (await fs.readFile(`${__dirname}/verify-workflow-jobs.yml`)).toString(
-      "utf-8"
-    )
-  ) as object;
+  const template: string = (
+    await fs.readFile(`${__dirname}/verify-workflow-jobs.yml`)
+  ).toString("utf-8");
 
   const outDir = `${__dirname}/../out`;
   await fs.mkdir(outDir, { recursive: true });
