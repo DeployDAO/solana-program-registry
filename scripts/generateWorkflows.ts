@@ -54,7 +54,7 @@ const makeWorkflowYaml = ({
       PROGRAM_GIT_TAG: tag,
       PROGRAM_SLUG: slug,
       PROGRAM_TARBALL_URL: `https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz`,
-      MAINNET_PROGRAM_ADDRESSES: JSON.stringify(
+      MAINNET_PROGRAM_ADDRESSES_JSON: JSON.stringify(
         manifest.programs?.mainnet ?? {}
       ),
       PROGRAM_NAMES: Object.keys(manifest.programs?.mainnet ?? {}).join(" "),

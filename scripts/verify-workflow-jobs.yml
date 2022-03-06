@@ -18,7 +18,7 @@ jobs:
       - name: Extract addresses
         run: |
           cd $(cat dirname)
-          echo '${{ env.MANIFEST_PROGRAM_ADDRESSES_JSON }}' > addresses.json
+          echo '${{ env.MAINNET_PROGRAM_ADDRESSES_JSON }}' > addresses.json
       - name: Login to Anchor
         run: nix shell ./#anchor-${{ env.ANCHOR_CLI_VERSION }} --command anchor login ${{ secrets.ANCHOR_AUTH_TOKEN }}
       - name: Perform verifiable build
