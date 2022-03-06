@@ -41,9 +41,11 @@
 "saber-hq/snapshots":
   - v0.1.0
   - v0.1.1
+  - v0.2.5
 "saber-hq/merkle-distributor":
   - v0.2.5
   - v0.2.6
+  - v0.3.0
 "saber-hq/pool-manager":
   - v0.1.7
   - v0.1.10
@@ -51,6 +53,7 @@
   - v1.6.5
   - v1.6.6
   - v1.6.7
+  - v1.7.0
 "saber-hq/saber-periphery":
   - v1.0.5
   - v1.0.6
