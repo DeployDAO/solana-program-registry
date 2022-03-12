@@ -52,6 +52,7 @@
   - v0.1.0
   - v0.1.1
   - v0.2.5
+  - v0.2.7
 "saber-hq/merkle-distributor":
   - v0.2.5
   - v0.2.6
@@ -65,11 +66,13 @@
   - v1.6.7
   - v1.6.8
   - v1.7.0
+  - v1.7.3
 "saber-hq/saber-periphery":
   - v1.0.5
   - v1.0.6
   - v1.0.7
   - v1.0.11
+  - v1.1.0
 
 "VenkoApp/venko":
   - v0.1.0
