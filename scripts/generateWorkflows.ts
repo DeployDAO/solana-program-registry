@@ -7,6 +7,8 @@ import * as yaml from "yaml";
 import { loadPrograms } from "../src/config";
 import type { AnchorManifest } from "../src/types";
 
+const DEFAULT_ANCHOR_VERSION = "0_23_0";
+
 const ANCHOR_PACKAGE_FOR_VERSION: Record<string, string> = {
   "0.12": "0_12_0",
   "0.13": "0_13_2",
@@ -19,6 +21,7 @@ const ANCHOR_PACKAGE_FOR_VERSION: Record<string, string> = {
   "0.20": "0_20_1",
   "0.21": "0_21_0",
   "0.22": "0_22_0",
+  "0.23": "0_23_0",
 };
 
 const makeWorkflowYaml = ({
@@ -38,8 +41,8 @@ const makeWorkflowYaml = ({
   const anchorPackage = anchor_version
     ? ANCHOR_PACKAGE_FOR_VERSION[
         anchor_version.split(".").slice(0, 2).join(".")
-      ] ?? "0_22_0"
-    : "0_22_0";
+      ] ?? DEFAULT_ANCHOR_VERSION
+    : DEFAULT_ANCHOR_VERSION;
 
   const header = {
     name: `Verify ${repo} ${tag}`,
