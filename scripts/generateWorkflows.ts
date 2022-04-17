@@ -22,6 +22,7 @@ const ANCHOR_PACKAGE_FOR_VERSION: Record<string, string> = {
   "0.21": "0_21_0",
   "0.22": "0_22_0",
   "0.23": "0_23_0",
+  "0.24": "0_24_2",
 };
 
 const makeWorkflowYaml = ({
