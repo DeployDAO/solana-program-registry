@@ -36,6 +36,7 @@
             anchor-0_21_0 = pkgs.anchor-0_21_0;
             anchor-0_22_0 = pkgs.anchor-0_22_0;
             anchor-0_23_0 = pkgs.anchor-0_23_0;
+            anchor-0_24_2 = pkgs.anchor-0_24_2;
           };
 
           devShell = pkgs.mkShell { buildInputs = [ devShell ]; };
