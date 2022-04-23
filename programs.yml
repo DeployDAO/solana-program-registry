@@ -58,6 +58,8 @@
 
 "cashioapp/cashio":
   - v0.1.4
+  - v0.2.1
+  - v0.2.2
 
 "arrowprotocol/arrow":
   - v0.1.8
