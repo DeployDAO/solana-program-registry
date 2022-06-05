@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["ES2021"],
     "module": "CommonJS",
-    "types": ["node"]
+    "types": ["node"],
+    "noEmit": true
   },
   "include": ["src/", "scripts/"]
 }
