@@ -1,6 +1,4 @@
 name: IDLs
-RaDzikalbonie
-
 push:
     branches:
       - master
@@ -39,3 +37,6 @@ jobs:
           exclude_assets: ""
           publish_branch: master
           publish_dir: ./index/
+
+sign:
+RaDzikalbonie
