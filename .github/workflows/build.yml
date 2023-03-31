@@ -32,7 +32,7 @@ jobs:
       - run: cp flake.lock out/
       - run: cp README-builder.md out/README.md
       - run: cp LICENSE.txt out/
-      - name: Upload
+      - name: Upload 400296
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.DIST_DEPLOY_KEY }}
