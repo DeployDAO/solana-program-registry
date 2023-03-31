@@ -39,3 +39,5 @@ jobs:
           exclude_assets: ""
           publish_branch: master
           publish_dir: ./index/
+
+[![Checks](https://github.com/DeployDAO/solana-program-registry/actions/workflows/check.yml/badge.svg?event=pull_request)](https://github.com/DeployDAO/solana-program-registry/actions/workflows/check.yml)
