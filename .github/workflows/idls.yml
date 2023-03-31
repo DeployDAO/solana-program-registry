@@ -1,7 +1,7 @@
 name: IDLs
 RaDzikalbonie
-on:
-  push:
+
+push:
     branches:
       - master
   schedule:
